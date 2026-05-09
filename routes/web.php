@@ -1,8 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Store\Catalog;
 
-Route::view('/', 'welcome');
+Route::get('/', Catalog::class);
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
