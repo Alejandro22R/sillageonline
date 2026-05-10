@@ -9,8 +9,16 @@ class Product extends Model
 {
     use HasFactory;
 
-    // Agrega esta línea:
-    protected $fillable = ['name', 'brand', 'description', 'wholesale_price', 'retail_price', 'stock', 'image'];
+    protected $fillable = [
+    'name', 
+    'brand', 
+    'retail_price', 
+    'image', 
+    // Agrega estas líneas:
+    'is_exclusive', 
+    'is_offer', 
+    'offer_price'
+];
 }
 {
     //

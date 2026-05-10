@@ -2,12 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Products\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
 class ProductsTable
@@ -16,37 +16,43 @@ class ProductsTable
     {
         return $table
             ->columns([
+                ImageColumn::make('image')
+                    ->label('Imagen')
+                    ->circular(),
+
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Perfume')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+
                 TextColumn::make('brand')
+                    ->label('Marca')
                     ->searchable(),
-                TextColumn::make('wholesale_price')
-                    ->money()
-                    ->sortable(),
+
                 TextColumn::make('retail_price')
-                    ->money()
+                    ->label('Precio')
+                    ->money('USD')
                     ->sortable(),
-                TextColumn::make('stock')
-                    ->numeric()
+
+                // SECCIÓN NUEVA: Controles rápidos desde la tabla
+                ToggleColumn::make('is_exclusive')
+                    ->label('Exclusivo')
+                    ->onColor('warning')
                     ->sortable(),
-                ImageColumn::make('image'),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
+                ToggleColumn::make('is_offer')
+                    ->label('Oferta')
+                    ->onColor('danger')
+                    ->sortable(),
             ])
             ->filters([
-                //
+                // Aquí van tus filtros si tienes (ej: Filtrar por marca)
             ])
-            ->recordActions([
-                ViewAction::make(),
+            ->actions([
                 EditAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
