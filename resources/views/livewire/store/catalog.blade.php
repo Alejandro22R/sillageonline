@@ -249,8 +249,12 @@
                                     <h3 class="text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                     
                                     <div class="flex justify-center items-end gap-3 mt-2 mb-6">
-                                        <span class="text-sm text-gray-500 line-through mb-1">${{ number_format($product->retail_price * 1.2, 2) }}</span>
-                                        <span class="text-xl font-black text-red-500">${{ number_format($product->retail_price, 2) }}</span>
+                                        <span class="text-sm text-gray-500 line-through mb-1">
+                                            ${{ number_format($product->retail_price, 2) }}
+                                        </span>
+                                        <span class="text-xl font-black text-red-500">
+                                            ${{ number_format($product->offer_price ?? $product->retail_price, 2) }}
+                                        </span>
                                     </div>
                                     
                                     <button wire:click="addToCart({{ $product->id }})" class="mt-auto w-full bg-transparent border border-red-600/50 text-red-500 hover:bg-red-600 hover:text-white py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300">
@@ -291,11 +295,17 @@
                                     
                                     @if($product->is_offer)
                                         <div class="flex justify-center items-end gap-2 mt-2 mb-6">
-                                            <span class="text-xs text-gray-500 line-through mb-1">${{ number_format($product->retail_price * 1.2, 2) }}</span>
-                                            <span class="text-xl font-black text-red-500">${{ number_format($product->retail_price, 2) }}</span>
+                                            <span class="text-xs text-gray-500 line-through mb-1">
+                                                ${{ number_format($product->retail_price, 2) }}
+                                            </span>
+                                            <span class="text-xl font-black text-red-500">
+                                                ${{ number_format($product->offer_price ?? $product->retail_price, 2) }}
+                                            </span>
                                         </div>
                                     @else
-                                        <p class="text-xl font-light text-[#D4AF37] mt-2 mb-6">${{ number_format($product->retail_price, 2) }}</p>
+                                        <p class="text-xl font-light text-[#D4AF37] mt-2 mb-6">
+                                            ${{ number_format($product->retail_price, 2) }}
+                                        </p>
                                     @endif
                                     
                                     <button wire:click="addToCart({{ $product->id }})" class="mt-auto w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300">
