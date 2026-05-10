@@ -18,56 +18,113 @@
                 <div class="flex items-center justify-between h-20">
                     
                     <div class="flex-1 flex items-center">
-                        <div class="relative w-full max-w-xs hidden md:block">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            </div>
-                            <input type="text" class="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-full leading-5 bg-[#111] text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] text-sm transition-all shadow-inner" placeholder="Busca aquí">
-                        </div>
-                    </div>
+    <a href="/" class="flex items-center gap-3 group">
+        <img src="{{ asset('img/sillage.png') }}" 
+             alt="Sillage Logo" 
+             class="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+        >
+        
+        <div class="flex flex-col">
+            <span class="text-xl sm:text-2xl font-cinzel font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-[#D4AF37]">
+                Sillage
+            </span>
+            <span class="text-[8px] tracking-[0.4em] uppercase text-gray-500 font-light -mt-1">
+                Parfums
+            </span>
+        </div>
+    </a>
+</div>
 
-                    <div class="flex-shrink-0 flex items-center justify-center flex-1">
-                        <span class="text-3xl sm:text-4xl font-black uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-[#D4AF37] cursor-pointer">
-                            SILLAGE
-                        </span>
+                    <div class="flex-1 flex items-center justify-center relative z-50">
+                        <div class="relative w-full max-w-md">
+                            
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            
+                            <input 
+                                wire:model.live.debounce.300ms="search"
+                                type="text" 
+                                class="block w-full pl-10 pr-4 py-2.5 border border-white/10 rounded-full bg-[#111] text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] text-sm transition-all shadow-inner" 
+                                placeholder="Busca tu fragancia favorita..."
+                            >
+
+                            @if(strlen($search) >= 2)
+                                <div class="absolute top-full left-0 right-0 mt-3 bg-[#0A0A0A] border border-[#D4AF37]/40 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden z-[100]">
+                                    @if($searchResults->count() > 0)
+                                        <div class="max-h-[350px] overflow-y-auto hide-scroll p-2">
+                                            @foreach($searchResults as $result)
+                                                <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors group">
+                                                    <div class="w-12 h-12 rounded bg-[#111] border border-white/10 overflow-hidden flex-shrink-0">
+                                                        @if($result->image)
+                                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($result->image) }}" class="w-full h-full object-cover">
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    <div class="flex-1 min-w-0 text-left">
+                                                        <p class="text-sm font-bold text-white truncate group-hover:text-[#D4AF37] transition-colors">{{ $result->name }}</p>
+                                                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">{{ $result->brand }}</p>
+                                                    </div>
+
+                                                    <div class="text-right flex-shrink-0 flex flex-col items-end">
+                                                        <p class="text-[#D4AF37] font-bold text-sm mb-1">${{ number_format($result->offer_price ?? $result->retail_price, 2) }}</p>
+                                                        <button wire:click="addToCart({{ $result->id }})" class="text-[9px] uppercase tracking-widest font-bold border border-[#D4AF37] text-[#D4AF37] px-2 py-1 rounded hover:bg-[#D4AF37] hover:text-black transition-colors">
+                                                            Añadir
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="p-6 text-center">
+                                            <svg class="w-8 h-8 text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                            <p class="text-sm text-gray-400">No encontramos resultados para "<span class="text-white">{{ $search }}</span>"</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="flex-1 flex items-center justify-end space-x-4 sm:space-x-6">
                         <div class="flex items-center space-x-4 text-gray-300">
-                            <button class="hover:text-[#D4AF37] transition-colors relative group">
+                            <button class="hover:text-[#D4AF37] transition-colors">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                             </button>
 
-                            <button class="hover:text-[#D4AF37] transition-colors relative group">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
-                            </button>
-
-                            @if($cartCount > 0)
-                                <button wire:click="checkoutWhatsApp" class="bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_15_rgba(212,175,55,0.4)] hidden xl:block">
-                                    Pedir ya
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="relative hover:text-[#D4AF37] transition-colors">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                    <span class="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+                                        {{ $cartCount }}
+                                    </span>
                                 </button>
-                            @endif
-
-                            <button class="relative hover:text-[#D4AF37] transition-colors group">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                                <span class="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]">
-                                    {{ $cartCount }}
-                                </span>
-                            </button>
+                                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-4 w-80 bg-[#0A0A0A] border border-[#D4AF37]/30 rounded-xl shadow-2xl z-[100] p-4" style="display:none;">
+                                    <h3 class="text-[#D4AF37] text-xs font-bold uppercase mb-4 tracking-widest">Carrito de Compras</h3>
+                                    <div class="max-h-60 overflow-y-auto hide-scroll space-y-4">
+                                        @foreach(session('cart', []) as $item)
+                                            <div class="flex justify-between text-xs border-b border-white/5 pb-2">
+                                                <span class="text-white uppercase">{{ $item['name'] }} (x{{ $item['quantity'] }})</span>
+                                                <span class="text-[#D4AF37] font-bold">${{ number_format($item['price'] * $item['quantity'], 2) }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    @if($cartCount > 0)
+                                        <button wire:click="checkoutWhatsApp" class="w-full bg-[#D4AF37] text-black mt-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest">Pedir por WhatsApp</button>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
 
                         <div class="hidden lg:block h-8 w-px bg-gray-800"></div>
 
-                        <a href="/admin/products" class="flex items-center space-x-3 cursor-pointer group">
-                            <div class="p-2 rounded-full border border-gray-800 group-hover:border-[#D4AF37] transition-colors bg-[#111]">
-                                <svg class="w-5 h-5 text-gray-300 group-hover:text-[#D4AF37] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            </div>
-                            <div class="hidden md:block text-left">
-                                <p class="text-[10px] text-gray-500 leading-none tracking-wide">Bienvenido</p>
-                                <p class="text-sm font-bold text-white group-hover:text-[#D4AF37] transition-colors leading-tight">Mi Panel</p>
-                            </div>
+                        <a href="/admin/products" class="p-2 rounded-full border border-gray-800 hover:border-[#D4AF37] transition-colors bg-[#111]">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </a>
                     </div>
+
                 </div>
             </div>
         </nav>
@@ -150,16 +207,27 @@
 
         <div class="absolute top-0 left-[-10%] w-[500px] h-[500px] bg-[#D4AF37]/20 rounded-full blur-[150px] pointer-events-none"></div>
 
-        <section class="relative h-[70vh] flex flex-col items-center justify-center text-center px-4" 
-                 x-data="{ show: false }" 
-                 x-init="setTimeout(() => show = true, 150)">
-            <div class="relative z-10 transform transition-all duration-1000 ease-out" 
-                 :class="show ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'">
-                <p class="text-[#D4AF37] tracking-[0.4em] uppercase text-sm md:text-base mb-6 font-bold">El Arte de la Perfumería Árabe</p>
-                <h1 class="text-6xl md:text-8xl lg:text-9xl font-black uppercase tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-[#D4AF37] drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">SILLAGE</h1>
-                <p class="mt-4 text-xl tracking-[0.6em] text-gray-400 uppercase font-light">Parfums</p>
-            </div>
-        </section>
+        <section class="relative h-[70vh] flex flex-col items-center justify-center text-center px-4">
+    <div class="relative z-10 flex flex-col items-center">
+        
+        <img src="{{ asset('img/sillage.png') }}" 
+             alt="Sillage Parfums Logo" 
+             class="h-24 md:h-32 w-auto object-contain mb-8 animate-fade-in"
+        >
+
+        <p class="text-[#D4AF37] tracking-[0.4em] uppercase text-xs md:text-sm mb-4 font-bold">
+            El Arte de la Perfumería Árabe
+        </p>
+
+        <h1 class="text-7xl md:text-9xl font-cinzel font-bold tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-[#D4AF37] drop-shadow-2xl">
+            Sillage
+        </h1>
+
+        <p class="mt-4 text-xl tracking-[0.6em] text-gray-400 uppercase font-light">
+            Parfums
+        </p>
+    </div>
+</section>
 
         <main class="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 space-y-32">
             

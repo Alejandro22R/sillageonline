@@ -8,14 +8,13 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
     ],
-
     theme: {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                cinzel: ['"Cinzel"', 'serif'],
             },
         },
     },
-
     plugins: [forms],
 };

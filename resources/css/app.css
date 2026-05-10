@@ -1,3 +1,12 @@
+@font-face {
+    font-family: 'Cinzel';
+    /* El ./ es la clave para que Vite la reconozca */
+    src: url('./fonts/Cinzel.ttf') format('truetype'); 
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

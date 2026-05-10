@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Session;
 class Catalog extends Component
 {
     // Función para añadir al carrito usando Sesiones
+   
     public function addToCart($productId)
     {
         $product = Product::findOrFail($productId);
@@ -62,20 +63,36 @@ class Catalog extends Component
         return redirect()->away("https://wa.me/" . $numero . "?text=" . urlencode($mensaje));
     }
 
+    public $search = '';
+
     public function render()
     {
-        // Contamos cuántos artículos hay en el carrito (de la sesión)
+        // 1. Las listas de la página principal (AHORA SIEMPRE ESTÁN COMPLETAS)
+        $exclusivos = Product::where('is_exclusive', true)->get();
+        $ofertas    = Product::where('is_offer', true)->get();
+        $products   = Product::all();
+
+        // 2. Lógica del Dropdown de Búsqueda
+        $searchResults = collect(); // Una lista vacía por defecto
+        
+        // Si el usuario escribió al menos 2 letras, buscamos en la base de datos
+        if (strlen($this->search) >= 2) {
+            $searchResults = Product::where('name', 'like', '%' . $this->search . '%')
+                ->orWhere('brand', 'like', '%' . $this->search . '%')
+                ->take(5) // Solo mostramos los 5 mejores resultados para no hacer el menú gigante
+                ->get();
+        }
+
+        // 3. Carrito
         $cart = session('cart', []);
         $cartCount = array_sum(array_column($cart, 'quantity'));
 
         return view('livewire.store.catalog', [
-            // Listas de productos
-            'exclusivos' => Product::where('is_exclusive', true)->get(),
-            'ofertas'    => Product::where('is_offer', true)->get(),
-            'products'   => Product::all(),
-            
-            // ¡La variable que faltaba!
-            'cartCount'  => $cartCount, 
+            'exclusivos'    => $exclusivos,
+            'ofertas'       => $ofertas,
+            'products'      => $products,
+            'cartCount'     => $cartCount,
+            'searchResults' => $searchResults, // Pasamos los resultados a la vista
         ]);
     }
 }
