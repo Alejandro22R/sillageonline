@@ -64,12 +64,18 @@ class Catalog extends Component
 
     public function render()
     {
-        $cart = Session::get('cart', []);
+        // Contamos cuántos artículos hay en el carrito (de la sesión)
+        $cart = session('cart', []);
         $cartCount = array_sum(array_column($cart, 'quantity'));
 
         return view('livewire.store.catalog', [
-            'products' => Product::where('stock', '>', 0)->get(),
-            'cartCount' => $cartCount
+            // Listas de productos
+            'exclusivos' => Product::where('is_exclusive', true)->get(),
+            'ofertas'    => Product::where('is_offer', true)->get(),
+            'products'   => Product::all(),
+            
+            // ¡La variable que faltaba!
+            'cartCount'  => $cartCount, 
         ]);
     }
 }

@@ -8,4 +8,11 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    // AGREGA ESTE BLOQUE SERVER:
+    server: {
+        host: '0.0.0.0',
+        hmr: {
+            host: '192.168.1.191', // Tu IP actual
+        },
+    },
 });
