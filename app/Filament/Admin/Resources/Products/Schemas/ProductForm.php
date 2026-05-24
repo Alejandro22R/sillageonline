@@ -2,52 +2,104 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
+use App\Models\DetalleCompra;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Set;
+
 class ProductForm
 {
     public static function configure($form)
     {
         return $form
             ->schema([
-                \Filament\Forms\Components\TextInput::make('name')
-                    ->label('Nombre de la Fragancia')
+                // 1. Selector con la lógica de limpieza al guardar
+                Select::make('name')
+                    ->label('Seleccionar Perfume del Inventario')
+                    ->options(function () {
+                        return DetalleCompra::query()
+                            ->select('nombre_perfume', 'marca_perfume')
+                            ->distinct()
+                            ->get()
+                            ->mapWithKeys(function ($item) {
+                                $key = $item->nombre_perfume . '|' . $item->marca_perfume;
+                                $label = "{$item->nombre_perfume} ({$item->marca_perfume})";
+                                return [$key => $label];
+                            });
+                    })
+                    ->searchable()
                     ->required()
-                    ->maxLength(255),
-                    
-                \Filament\Forms\Components\TextInput::make('brand')
-                    ->label('Marca / Casa Perfumera')
-                    ->maxLength(255)
-                    ->default('Sillage'),
+                    ->live()
+                    // ESTA ES LA SOLUCIÓN: Antes de guardar, extraemos solo el nombre
+                    ->dehydrateStateUsing(fn ($state) => explode('|', $state)[0] ?? $state)
+                    ->afterStateUpdated(function ($state, Set $set) {
+                        if (blank($state)) return;
 
-                \Filament\Forms\Components\TextInput::make('retail_price')
-                    ->label('Precio Regular')
+                        [$nombre, $marca] = explode('|', $state);
+
+                        $detalle = DetalleCompra::where('nombre_perfume', $nombre)
+                            ->where('marca_perfume', $marca)
+                            ->latest()
+                            ->first();
+
+                        if ($detalle) {
+                            $set('marca_perfume', $marca);
+                            $set('wholesale_price', $detalle->costo_unitario);
+
+                            $totalStock = DetalleCompra::where('nombre_perfume', $nombre)
+                                ->where('marca_perfume', $marca)
+                                ->sum('cantidad');
+                            $set('stock', $totalStock);
+                        }
+                    }),
+
+                TextInput::make('marca_perfume')
+                    ->label('Marca Detectada')
+                    ->readonly()
+                    ->required(),
+
+                TextInput::make('retail_price')
+                    ->label('Precio de Venta')
                     ->required()
                     ->numeric()
                     ->prefix('$'),
-                    
-                \Filament\Forms\Components\FileUpload::make('image')
+
+                TextInput::make('wholesale_price')
+                    ->label('Precio de Costo (Última Compra)')
+                    ->numeric()
+                    ->prefix('$')
+                    ->readonly(),
+
+                TextInput::make('stock')
+                    ->label('Inventario Total de esta Marca')
+                    ->numeric()
+                    ->readonly(),
+                TextInput::make('description')
+                    ->label('Descripción del Perfume'),
+
+                FileUpload::make('image')
                     ->label('Imagen del Perfume')
                     ->image()
                     ->directory('products')
-                    ->disk('public'),
-                    
-                \Filament\Forms\Components\Toggle::make('is_exclusive')
+                    ->disk('public')
+                    ->columnSpanFull(),
+
+                Toggle::make('is_exclusive')
                     ->label('Colección Exclusiva')
-                    ->helperText('Destacar en el primer carrusel superior.')
-                    ->onColor('warning'), 
+                    ->onColor('warning'),
 
-                \Filament\Forms\Components\Toggle::make('is_offer')
+                Toggle::make('is_offer')
                     ->label('Oferta Especial')
-                    ->helperText('Mostrar en el carrusel de ofertas con etiqueta de descuento.')
                     ->onColor('danger')
-                    ->live(), 
+                    ->live(),
 
-                \Filament\Forms\Components\TextInput::make('offer_price')
-                    ->label('Precio de Oferta ($)')
+                TextInput::make('offer_price')
+                    ->label('Precio de Oferta')
                     ->numeric()
                     ->prefix('$')
-                    // LA MAGIA: Quitamos el tipado estricto (\Filament\Forms\Get)
-                    // Ahora aceptará el "Get" nativo de tu sistema sin quejarse.
-                    ->visible(fn ($get): bool => $get('is_offer') === true), 
+                    ->visible(fn ($get): bool => (bool) $get('is_offer')),
             ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
+use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
@@ -13,18 +14,25 @@ class ProductInfolist
         return $schema
             ->components([
                 TextEntry::make('name'),
-                TextEntry::make('brand')
+                TextEntry::make('marca_perfume')
                     ->placeholder('-'),
-                TextEntry::make('description')
-                    ->placeholder('-')
-                    ->columnSpanFull(),
+                TextEntry::make('stock')
+                    ->numeric(),
                 TextEntry::make('wholesale_price')
                     ->money()
                     ->placeholder('-'),
                 TextEntry::make('retail_price')
                     ->money(),
-                TextEntry::make('stock')
-                    ->numeric(),
+                IconEntry::make('is_exclusive')
+                    ->boolean(),
+                IconEntry::make('is_offer')
+                    ->boolean(),
+                TextEntry::make('offer_price')
+                    ->money()
+                    ->placeholder('-'),
+                TextEntry::make('description')
+                    ->placeholder('-')
+                    ->columnSpanFull(),
                 ImageEntry::make('image')
                     ->placeholder('-'),
                 TextEntry::make('created_at')

@@ -2,6 +2,13 @@
 
 namespace App\Filament\Admin\Resources\Products\Tables;
 
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class ProductsTable
@@ -10,41 +17,47 @@ class ProductsTable
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\ImageColumn::make('image')
-                    ->label('Imagen')
-                    ->circular(),
-
-                \Filament\Tables\Columns\TextColumn::make('name')
-                    ->label('Perfume')
-                    ->searchable()
-                    ->sortable()
-                    ->weight('bold'),
-
-                \Filament\Tables\Columns\TextColumn::make('brand')
-                    ->label('Marca')
+                TextColumn::make('name')
                     ->searchable(),
-
-                \Filament\Tables\Columns\TextColumn::make('retail_price')
-                    ->label('Precio')
-                    ->money('USD')
+                TextColumn::make('marca_perfume')
+                    ->searchable(),
+                TextColumn::make('stock')
+                    ->numeric()
                     ->sortable(),
-
-                // Controles rápidos desde la tabla
-                \Filament\Tables\Columns\ToggleColumn::make('is_exclusive')
-                    ->label('Exclusivo')
-                    ->onColor('warning')
+                TextColumn::make('wholesale_price')
+                    ->money()
                     ->sortable(),
-
-                \Filament\Tables\Columns\ToggleColumn::make('is_offer')
-                    ->label('Oferta')
-                    ->onColor('danger')
+                TextColumn::make('retail_price')
+                    ->money()
                     ->sortable(),
+                IconColumn::make('is_exclusive')
+                    ->boolean(),
+                IconColumn::make('is_offer')
+                    ->boolean(),
+                TextColumn::make('offer_price')
+                    ->money()
+                    ->sortable(),
+                ImageColumn::make('image'),
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                // Filtros vacíos
+                //
             ])
-            // VACIADO TOTAL: Eliminamos cualquier clase conflictiva
-            ->actions([]) 
-            ->bulkActions([]);
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 }

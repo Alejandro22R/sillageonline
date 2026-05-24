@@ -20,14 +20,9 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    // 1. Dejamos un ÚNICO ícono (el de la cajita)
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'Productos';
-
-    // 2. Personalización de nombres ordenada en líneas separadas
-    protected static ?string $modelLabel = 'Perfume';
-    protected static ?string $pluralModelLabel = 'Catálogo de Perfumes';
+    protected static ?string $recordTitleAttribute = 'product';
 
     public static function form(Schema $schema): Schema
     {

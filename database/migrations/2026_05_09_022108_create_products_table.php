@@ -13,13 +13,19 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Nombre del perfume (ej. Asad)
-            $table->string('brand')->nullable(); // Marca (Lattafa, Afnan, etc.)
-            $table->text('description')->nullable(); // Notas olfativas
-            $table->decimal('wholesale_price', 8, 2)->nullable(); // Precio al mayor
-            $table->decimal('retail_price', 8, 2); // Precio al detal o final
-            $table->integer('stock')->default(0); // Cantidad en inventario
-            $table->string('image')->nullable(); // Foto del producto
+            $table->string('name'); // El nombre que elegiremos del select
+
+            // CAMBIO AQUÍ: Usamos string para la marca, NO el foreignId
+            $table->string('marca_perfume')->nullable();
+
+            $table->integer('stock')->default(0);
+
+            // Dejamos estos aquí para que la otra migración pueda usar ->after('retail_price')
+            $table->decimal('wholesale_price', 10, 2)->nullable();
+            $table->decimal('retail_price', 10, 2);
+
+            $table->text('description')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }
