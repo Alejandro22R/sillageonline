@@ -3,6 +3,29 @@
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         [x-cloak] { display: none !important; }
+
+        .search-dropdown {
+            position: fixed;
+            top: 84px;
+            left: 0;
+            width: 100%;
+            background: #0A0A0A;
+            border-bottom: 1px solid rgba(212,175,55,0.3);
+            border-radius: 0;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            overflow: hidden;
+            z-index: 9999;
+        }
+
+        @media (min-width: 768px) {
+            .search-dropdown {
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 50vw !important;
+                border: 1px solid rgba(212,175,55,0.4) !important;
+                border-radius: 1rem !important;
+            }
+        }
     </style>
 
     <div class="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#D4AF37] selection:text-black overflow-x-hidden relative"
@@ -14,32 +37,31 @@
         </div>
 
         <nav class="bg-[#050505]/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
-            <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-20">
+            <div class="max-w-screen-2xl mx-auto px-2 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-20 gap-2 sm:gap-4">
                     
-                    <div class="flex-1 flex items-center">
-    <a href="/" class="flex items-center gap-3 group">
-        <img src="{{ asset('img/sillage.png') }}" 
-             alt="Sillage Logo" 
-             class="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
-        >
-        
-        <div class="flex flex-col">
-            <span class="text-xl sm:text-2xl font-cinzel font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-[#D4AF37]">
-                Sillage
-            </span>
-            <span class="text-[8px] tracking-[0.4em] uppercase text-gray-500 font-light -mt-1">
-                Parfums
-            </span>
-        </div>
-    </a>
-</div>
+                    <div class="flex-none flex items-center">
+                        <a href="/" class="flex items-center gap-1.5 sm:gap-3 group">
+                            <img src="{{ asset('img/sillage.png') }}" 
+                                 alt="Sillage Logo" 
+                                 class="h-8 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
+                            >
+                            <div class="flex flex-col">
+                                <span class="text-base sm:text-2xl font-cinzel font-bold tracking-[0.15em] sm:tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-[#D4AF37]">
+                                    Sillage
+                                </span>
+                                <span class="text-[6px] sm:text-[8px] tracking-[0.4em] uppercase text-gray-500 font-light -mt-1">
+                                    Parfums
+                                </span>
+                            </div>
+                        </a>
+                    </div>
 
-                    <div class="flex-1 flex items-center justify-center relative z-50">
-                        <div class="relative w-full max-w-md">
+                    <div class="flex-1 max-w-md relative z-50 mx-1 sm:mx-0">
+                        <div class="relative w-full">
                             
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <svg class="h-4 w-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none">
+                                <svg class="h-3.5 w-3.5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
                             </div>
@@ -47,30 +69,29 @@
                             <input 
                                 wire:model.live.debounce.300ms="search"
                                 type="text" 
-                                class="block w-full pl-10 pr-4 py-2.5 border border-white/10 rounded-full bg-[#111] text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] text-sm transition-all shadow-inner" 
-                                placeholder="Busca tu fragancia favorita..."
+                                class="block w-full pl-9 pr-3 py-2 border border-white/10 rounded-full bg-[#111] text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] text-xs md:text-sm transition-all shadow-inner" 
+                                placeholder="Buscar fragancia..."
                             >
 
                             @if(strlen($search) >= 2)
-                                <div class="absolute top-full left-0 right-0 mt-3 bg-[#0A0A0A] border border-[#D4AF37]/40 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden z-[100]">
+                                
+                                <div class="search-dropdown">
                                     @if($searchResults->count() > 0)
-                                        <div class="max-h-[350px] overflow-y-auto hide-scroll p-2">
+                                        <div style="max-height:60vh; overflow-y:auto; padding:12px;">
                                             @foreach($searchResults as $result)
-                                                <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors group">
+                                                <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-colors group">
                                                     <div class="w-12 h-12 rounded bg-[#111] border border-white/10 overflow-hidden flex-shrink-0">
                                                         @if($result->image)
                                                             <img src="{{ \Illuminate\Support\Facades\Storage::url($result->image) }}" class="w-full h-full object-cover">
                                                         @endif
                                                     </div>
-                                                    
                                                     <div class="flex-1 min-w-0 text-left">
                                                         <p class="text-sm font-bold text-white truncate group-hover:text-[#D4AF37] transition-colors">{{ $result->name }}</p>
-                                                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">{{ $result->brand }}</p>
+                                                        <p class="text-[9px] text-gray-400 uppercase tracking-widest truncate">{{ $result->marca_perfume ?? $result->brand }}</p>
                                                     </div>
-
                                                     <div class="text-right flex-shrink-0 flex flex-col items-end">
                                                         <p class="text-[#D4AF37] font-bold text-sm mb-1">${{ number_format($result->offer_price ?? $result->retail_price, 2) }}</p>
-                                                        <button wire:click="addToCart({{ $result->id }})" class="text-[9px] uppercase tracking-widest font-bold border border-[#D4AF37] text-[#D4AF37] px-2 py-1 rounded hover:bg-[#D4AF37] hover:text-black transition-colors">
+                                                        <button wire:click="addToCart({{ $result->id }})" class="text-[9px] uppercase tracking-widest font-black border border-[#D4AF37] text-[#D4AF37] px-2.5 py-1 rounded hover:bg-[#D4AF37] hover:text-black transition-colors">
                                                             Añadir
                                                         </button>
                                                     </div>
@@ -78,30 +99,30 @@
                                             @endforeach
                                         </div>
                                     @else
-                                        <div class="p-6 text-center">
-                                            <svg class="w-8 h-8 text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                                            <p class="text-sm text-gray-400">No encontramos resultados para "<span class="text-white">{{ $search }}</span>"</p>
+                                        <div style="padding:32px; text-align:center;">
+                                            <p class="text-xs text-gray-400">No hay resultados para "<span class="text-white">{{ $search }}</span>"</p>
                                         </div>
                                     @endif
                                 </div>
+                                
                             @endif
                         </div>
                     </div>
 
-                    <div class="flex-1 flex items-center justify-end space-x-4 sm:space-x-6">
-                        <div class="flex items-center space-x-4 text-gray-300">
-                            <button class="hover:text-[#D4AF37] transition-colors">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    <div class="flex-none flex items-center justify-end space-x-2 sm:space-x-6">
+                        <div class="flex items-center space-x-2 sm:space-x-4 text-gray-300">
+                            <button class="hover:text-[#D4AF37] transition-colors p-1">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                             </button>
 
                             <div class="relative" x-data="{ open: false }">
-                                <button @click="open = !open" class="relative hover:text-[#D4AF37] transition-colors">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                                    <span class="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+                                <button @click="open = !open" class="relative hover:text-[#D4AF37] transition-colors p-1">
+                                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                    <span class="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg transform translate-x-1 -translate-y-1">
                                         {{ $cartCount }}
                                     </span>
                                 </button>
-                                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-4 w-80 bg-[#0A0A0A] border border-[#D4AF37]/30 rounded-xl shadow-2xl z-[100] p-4" style="display:none;">
+                                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-4 w-72 sm:w-80 bg-[#0A0A0A] border border-[#D4AF37]/30 rounded-xl shadow-2xl z-[100] p-4" style="display:none;">
                                     <h3 class="text-[#D4AF37] text-xs font-bold uppercase mb-4 tracking-widest">Carrito de Compras</h3>
                                     <div class="max-h-60 overflow-y-auto hide-scroll space-y-4">
                                         @foreach(session('cart', []) as $item)
@@ -118,10 +139,10 @@
                             </div>
                         </div>
 
-                        <div class="hidden lg:block h-8 w-px bg-gray-800"></div>
+                        <div class="hidden md:block h-8 w-px bg-gray-800"></div>
 
-                        <a href="/admin/products" class="p-2 rounded-full border border-gray-800 hover:border-[#D4AF37] transition-colors bg-[#111]">
-                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <a href="/admin/products" class="p-1.5 sm:p-2 rounded-full border border-gray-800 hover:border-[#D4AF37] transition-colors bg-[#111]">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </a>
                     </div>
 
@@ -341,43 +362,46 @@
                         <h2 class="text-3xl md:text-5xl font-black uppercase tracking-widest text-white">Catálogo <span class="font-light">Completo</span></h2>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+                    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8">
                         @foreach($products as $product)
                             <div class="group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2 h-full">
-                                <div class="h-[320px] w-full overflow-hidden relative bg-[#111]">
+                                
+                                <div class="h-[200px] sm:h-[320px] w-full overflow-hidden relative bg-[#111]">
                                     @if($product->image)
                                         <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100">
                                     @endif
-                                    @if($product->is_offer)
-                                        <div class="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2.5 py-0.5 uppercase tracking-widest rounded shadow-lg">Oferta</div>
-                                    @elseif($product->is_exclusive)
-                                        <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-sm text-[#D4AF37] text-[10px] font-bold px-2.5 py-0.5 uppercase tracking-widest border border-[#D4AF37]/30 rounded shadow-lg">Exclusiva</div>
-                                    @endif
-
-                                    <div class="absolute bottom-4 right-4 text-gray-400 text-[10px] uppercase tracking-widest font-bold drop-shadow-md">
-                                        {{ $product->brand ?? 'Sillage' }}
-                                    </div>
-                                </div>
-                                <div class="p-6 flex flex-col flex-1 text-center">
-                                    <h3 class="text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                     
                                     @if($product->is_offer)
-                                        <div class="flex justify-center items-end gap-2 mt-2 mb-6">
-                                            <span class="text-xs text-gray-500 line-through mb-1">
+                                        <div class="absolute top-2 sm:top-4 left-2 sm:left-4 bg-red-600 text-white text-[8px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 uppercase tracking-widest rounded shadow-lg">Oferta</div>
+                                    @elseif($product->is_exclusive)
+                                        <div class="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black/80 backdrop-blur-sm text-[#D4AF37] text-[8px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 uppercase tracking-widest border border-[#D4AF37]/30 rounded shadow-lg">Exclusiva</div>
+                                    @endif
+
+                                    <div class="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 text-gray-400 text-[8px] sm:text-[10px] uppercase tracking-widest font-bold drop-shadow-md">
+                                        {{ $product->marca_perfume ?? 'Sillage' }}
+                                    </div>
+                                </div>
+
+                                <div class="p-3 sm:p-6 flex flex-col flex-1 text-center">
+                                    <h3 class="text-sm sm:text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
+                                    
+                                    @if($product->is_offer)
+                                        <div class="flex justify-center items-end gap-1 sm:gap-2 mt-1 sm:mt-2 mb-3 sm:mb-6">
+                                            <span class="text-[10px] sm:text-xs text-gray-500 line-through mb-0.5 sm:mb-1">
                                                 ${{ number_format($product->retail_price, 2) }}
                                             </span>
-                                            <span class="text-xl font-black text-red-500">
+                                            <span class="text-base sm:text-xl font-black text-red-500">
                                                 ${{ number_format($product->offer_price ?? $product->retail_price, 2) }}
                                             </span>
                                         </div>
                                     @else
-                                        <p class="text-xl font-light text-[#D4AF37] mt-2 mb-6">
+                                        <p class="text-base sm:text-xl font-light text-[#D4AF37] mt-1 sm:mt-2 mb-3 sm:mb-6">
                                             ${{ number_format($product->retail_price, 2) }}
                                         </p>
                                     @endif
                                     
-                                    <button wire:click="addToCart({{ $product->id }})" class="mt-auto w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300">
-                                        Añadir al carrito
+                                    <button wire:click="addToCart({{ $product->id }})" class="mt-auto w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-2 sm:py-3 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300">
+                                        Añadir
                                     </button>
                                 </div>
                             </div>

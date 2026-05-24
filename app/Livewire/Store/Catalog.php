@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\Session;
 
 class Catalog extends Component
 {
+    public $search = '';
+
     // Función para añadir al carrito usando Sesiones
-   
     public function addToCart($productId)
     {
         $product = Product::findOrFail($productId);
@@ -23,7 +24,8 @@ class Catalog extends Component
                 "name" => $product->name,
                 "quantity" => 1,
                 "price" => $product->retail_price,
-                "brand" => $product->brand
+                // CORRECCIÓN 1: Usar marca_perfume en lugar de brand
+                "brand" => $product->marca_perfume 
             ];
         }
 
@@ -47,7 +49,7 @@ class Catalog extends Component
         if (empty($cart)) return;
 
         $total = $this->getTotal();
-        $numero = "584249033492"; // Cambia este número por el tuyo de Panamá
+        $numero = "584122894918"; 
 
         $mensaje = "¡Hola Sillage Parfums! 🌟 Deseo realizar un pedido:\n\n";
         
@@ -63,23 +65,21 @@ class Catalog extends Component
         return redirect()->away("https://wa.me/" . $numero . "?text=" . urlencode($mensaje));
     }
 
-    public $search = '';
-
     public function render()
     {
-        // 1. Las listas de la página principal (AHORA SIEMPRE ESTÁN COMPLETAS)
+        // 1. Las listas de la página principal
         $exclusivos = Product::where('is_exclusive', true)->get();
         $ofertas    = Product::where('is_offer', true)->get();
         $products   = Product::all();
 
         // 2. Lógica del Dropdown de Búsqueda
-        $searchResults = collect(); // Una lista vacía por defecto
+        $searchResults = collect(); 
         
-        // Si el usuario escribió al menos 2 letras, buscamos en la base de datos
         if (strlen($this->search) >= 2) {
             $searchResults = Product::where('name', 'like', '%' . $this->search . '%')
-                ->orWhere('brand', 'like', '%' . $this->search . '%')
-                ->take(5) // Solo mostramos los 5 mejores resultados para no hacer el menú gigante
+                // CORRECCIÓN 2: Buscar en la columna 'marca_perfume' en lugar de 'brand'
+                ->orWhere('marca_perfume', 'like', '%' . $this->search . '%')
+                ->take(5) 
                 ->get();
         }
 
@@ -92,7 +92,7 @@ class Catalog extends Component
             'ofertas'       => $ofertas,
             'products'      => $products,
             'cartCount'     => $cartCount,
-            'searchResults' => $searchResults, // Pasamos los resultados a la vista
+            'searchResults' => $searchResults,
         ]);
     }
 }
