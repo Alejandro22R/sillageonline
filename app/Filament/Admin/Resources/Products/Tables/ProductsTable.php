@@ -17,9 +17,9 @@ class ProductsTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->searchable(),
                 TextColumn::make('marca_perfume')
+                    ->searchable(),
+                TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('stock')
                     ->numeric()
@@ -37,7 +37,6 @@ class ProductsTable
                 TextColumn::make('offer_price')
                     ->money()
                     ->sortable(),
-                ImageColumn::make('image'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

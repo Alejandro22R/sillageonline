@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Venta;
+use App\Models\Compra; // <-- Añadimos el modelo Compra aquí
 use Illuminate\Support\Facades\DB;
 use Filament\Widgets\ChartWidget;
 
@@ -17,7 +18,7 @@ class PerdidasChart extends ChartWidget
     {
         $añoActual = now()->year;
 
-        // 1. Obtener Ingresos (Ventas) por mes
+        // 1. Obtener Ingresos (Ventas) por mes usando 'fecha_venta'
         $ingresos = Venta::select(
             DB::raw('MONTH(fecha_venta) as mes'),
             DB::raw('SUM(total_venta) as total')
@@ -27,14 +28,13 @@ class PerdidasChart extends ChartWidget
             ->pluck('total', 'mes')
             ->toArray();
 
-        // 2. Obtener Egresos (Compras) por mes
-        // Nota: Asegúrate de que el modelo se llame Compra o DetalleCompra según tu tabla
-        $egresos = DB::table('detalle_compras')
-            ->select(
-                DB::raw('MONTH(created_at) as mes'),
-                DB::raw('SUM(subtotal) as total')
-            )
-            ->whereYear('created_at', $añoActual)
+        // 2. Obtener Egresos (Compras) por mes usando 'fecha_compra'
+        // CORRECCIÓN: Ahora usamos la tabla principal Compra y su fecha real
+        $egresos = Compra::select(
+            DB::raw('MONTH(fecha_compra) as mes'),
+            DB::raw('SUM(total_compra) as total')
+        )
+            ->whereYear('fecha_compra', $añoActual)
             ->groupBy('mes')
             ->pluck('total', 'mes')
             ->toArray();
@@ -68,6 +68,6 @@ class PerdidasChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'bar'; // En barras se nota mucho más cuando el rojo supera al verde
+        return 'bar';
     }
 }

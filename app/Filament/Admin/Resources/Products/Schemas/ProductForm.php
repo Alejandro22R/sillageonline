@@ -75,7 +75,7 @@ class ProductForm
                 TextInput::make('stock')
                     ->label('Inventario Total de esta Marca')
                     ->numeric()
-                    ->readonly(),
+                    ->required(),
                 TextInput::make('description')
                     ->label('Descripción del Perfume'),
 
