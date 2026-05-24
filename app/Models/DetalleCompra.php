@@ -38,4 +38,6 @@ class DetalleCompra extends Model
     {
         return $this->belongsTo(Compra::class, 'compra_id');
     }
+
+
 }

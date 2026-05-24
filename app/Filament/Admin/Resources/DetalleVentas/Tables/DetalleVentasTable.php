@@ -15,8 +15,13 @@ class DetalleVentasTable
     {
         return $table
             ->columns([
-                TextColumn::make('venta.id')
-                    ->searchable(),
+               TextColumn::make('venta.id')
+    ->label('Venta')
+    ->formatStateUsing(fn ($state) => str_pad($state, 6, '0', STR_PAD_LEFT))
+    ->searchable(query: function ($query, string $search) {
+        // Esto permite buscar quitando los ceros a la izquierda que digite el usuario
+        $query->where('id', 'like', "%" . ltrim($search, '0') . "%");
+    }),
                 TextColumn::make('product_id')
                     ->label('Producto')
                     ->getStateUsing(function ($record) {
@@ -31,10 +36,10 @@ class DetalleVentasTable
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('precio_unitario')
-                    ->numeric()
+                    ->money('USD')
                     ->sortable(),
                 TextColumn::make('subtotal')
-                    ->numeric()
+                    ->money('USD')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

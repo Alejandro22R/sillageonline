@@ -15,9 +15,18 @@ class VentasTable
     {
         return $table
             ->columns([
-                TextColumn::make('cliente.nombre')
-                    ->label('Cliente')
-                    ->searchable(),
+               TextColumn::make('cliente.nombre')
+    ->label('Cliente')
+    ->formatStateUsing(fn ($record) => $record->cliente
+        ? "{$record->cliente->nombre} {$record->cliente->apellido}"
+        : 'Sin cliente'
+    )
+    ->searchable(query: function ($query, string $search) {
+        $query->whereHas('cliente', function ($q) use ($search) {
+            $q->where('nombre', 'like', "%{$search}%")
+              ->orWhere('apellido', 'like', "%{$search}%");
+        });
+    }),
 
                 // CAMBIO AQUÍ: Usamos la relación para mostrar el nombre
                 TextColumn::make('vendedor.name')

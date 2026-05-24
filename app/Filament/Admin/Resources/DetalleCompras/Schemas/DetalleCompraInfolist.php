@@ -11,17 +11,17 @@ class DetalleCompraInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('compra.id')
-                    ->label('Compra'),
+                TextEntry::make('compra.proveedor.nombre')
+                    ->label('Compra a Proveedor'),
                 TextEntry::make('nombre_perfume'),
                 TextEntry::make('marca_perfume'),
                 TextEntry::make('mililitros'),
                 TextEntry::make('cantidad')
                     ->numeric(),
                 TextEntry::make('costo_unitario')
-                    ->numeric(),
+                    ->money('USD'),
                 TextEntry::make('subtotal')
-                    ->numeric(),
+                    ->money('USD'),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),

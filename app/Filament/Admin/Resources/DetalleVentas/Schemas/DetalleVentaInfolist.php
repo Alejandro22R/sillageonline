@@ -11,16 +11,20 @@ class DetalleVentaInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('venta.id')
-                    ->label('Venta'),
-                TextEntry::make('product_id')
-                    ->numeric(),
+              TextEntry::make('venta.id')
+    ->label('Venta')
+    ->formatStateUsing(fn ($state) => str_pad($state, 6, '0', STR_PAD_LEFT)),
+                TextEntry::make('producto.name')
+                     ->getStateUsing(function ($record) {
+                        return $record->producto ? $record->producto->name : 'Producto no encontrado';
+                    })
+                    ->label('Producto'),
                 TextEntry::make('cantidad')
                     ->numeric(),
                 TextEntry::make('precio_unitario')
-                    ->numeric(),
+                    ->money('USD'),
                 TextEntry::make('subtotal')
-                    ->numeric(),
+                    ->money('USD'),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),

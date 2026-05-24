@@ -15,7 +15,8 @@ class DetalleComprasTable
     {
         return $table
             ->columns([
-                TextColumn::make('compra.id')
+                TextColumn::make('compra.proveedor.nombre')
+                    ->label('Compra a Proveedor')
                     ->searchable(),
                 TextColumn::make('nombre_perfume')
                     ->searchable(),
@@ -27,10 +28,10 @@ class DetalleComprasTable
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('costo_unitario')
-                    ->numeric()
+                    ->money('USD')
                     ->sortable(),
                 TextColumn::make('subtotal')
-                    ->numeric()
+                    ->money('USD')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
