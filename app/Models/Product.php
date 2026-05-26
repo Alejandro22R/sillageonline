@@ -7,12 +7,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+    // 1. Aquí solo van los nombres puros de las columnas transitables
     protected $fillable = [
         'name',
-        'marca_perfume', // Se llenará desde el detalle
+        'marca_perfume',
         'description',
         'wholesale_price',
         'retail_price',
+        'metodo_pago', // <-- Ahora solo el nombre de la columna limpia
+        'precio_divisa',
         'stock',
         'image',
         'is_exclusive',
@@ -20,9 +23,13 @@ class Product extends Model
         'offer_price'
     ];
 
+    // 2. ESTA PROPIEDAD DEBE IR AFUERA. Esto es lo que le dice a Laravel que lo guarde como array/JSON
+    protected $casts = [
+        'metodo_pago' => 'array',
+    ];
+
     /**
      * Relación con los detalles de compras.
-     * Esto permite que el producto sepa qué se ha comprado de él.
      */
     public function detallesCompra(): HasMany
     {

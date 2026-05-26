@@ -3,10 +3,14 @@
 namespace App\Filament\Admin\Resources\Ventas\Schemas;
 
 use App\Models\Product;
+use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -16,10 +20,10 @@ class VentaForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->columns(12) // Base de 12 columnas para organizar todo
+            ->columns(12)
             ->components([
 
-                // --- CABECERA (Línea 1) ---
+                // --- CABECERA DE LA VENTA (Datos Generales) ---
                 Select::make('cliente_id')
                     ->label('Cliente')
                     ->relationship(
@@ -46,6 +50,10 @@ class VentaForm
                     ->label('Fecha de Compra')
                     ->default(now())
                     ->required()
+                    ->live()
+                    ->afterStateUpdated(function (Get $get, Set $set) {
+                        self::actualizarGranTotal($get, $set);
+                    })
                     ->columnSpan(5),
 
                 Select::make('user_id')
@@ -54,14 +62,15 @@ class VentaForm
                     ->default(auth()->id())
                     ->dehydrated()
                     ->required()
-                    ->columnSpan(5),
+                    ->columnSpan(12), // Ocupa el ancho completo antes del bloque de productos
 
-                // --- CUERPO (Línea 2) ---
-
+                // --- CUERPO: REPEATER (Mapea con DetalleVenta) ---
                 Repeater::make('detalles')
                     ->label('Productos de la Factura')
                     ->relationship()
                     ->schema([
+
+                        // Fila 1 del Detalle: Selección del perfume y cantidad
                         Select::make('product_id')
                             ->label('Nombre del Perfume')
                             ->options(Product::query()->pluck('name', 'id'))
@@ -69,26 +78,10 @@ class VentaForm
                             ->required()
                             ->live()
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
-                                $product = Product::find($state);
-                                if ($product) {
-                                    $set('precio_unitario', $product->retail_price);
-
-                                    $cantidad = (int) ($get('cantidad') ?? 1);
-                                    if ($cantidad > $product->stock) {
-                                        $set('cantidad', $product->stock);
-                                        $cantidad = $product->stock;
-                                    }
-
-                                    $set('subtotal', $cantidad * (float) $product->retail_price);
-                                } else {
-                                    $set('precio_unitario', 0);
-                                    $set('subtotal', 0);
-                                }
-
-                                // Ejecuta la función estática para actualizar el contenedor de arriba
+                                self::calcularPreciosItem($set, $get, $state);
                                 self::actualizarGranTotal($get, $set);
                             })
-                            ->columnSpan(2),
+                            ->columnSpan(4),
 
                         TextInput::make('cantidad')
                             ->label('Cant.')
@@ -107,41 +100,114 @@ class VentaForm
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
                                 $precio = (float) ($get('precio_unitario') ?? 0);
                                 $set('subtotal', (int) $state * $precio);
-
-                                // Ejecuta la función estática para actualizar el contenedor de arriba
                                 self::actualizarGranTotal($get, $set);
                             })
-                            ->columnSpan(1),
+                            ->columnSpan(2),
 
                         TextInput::make('precio_unitario')
                             ->label('Costo U.')
                             ->prefix('$')
                             ->readonly()
-                            ->columnSpan(1),
+                            ->columnSpan(3),
 
                         TextInput::make('subtotal')
                             ->label('Subtotal')
                             ->prefix('$')
                             ->readonly()
-                            ->columnSpan(2),
+                            ->columnSpan(3),
+
+                        // CORRECCIÓN: método_pago dentro del Repeater mapeado con el modelo DetalleVenta
+                        CheckboxList::make('metodo_pago')
+                            ->label('Métodos de Pago para este Producto')
+                            ->options([
+                                'Pago Movil' => 'Pago Movil',
+                                'USDT' => 'USDT',
+                                'Zinli' => 'Zinli',
+                                'Wally' => 'Wally',
+                                'Cash' => 'Cash',
+                                'Zelle' => 'Zelle',
+                            ])
+                            ->columns(3)
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                // Recalcula los costos del perfume actual en base al método de pago seleccionado
+                                if (!empty($get('product_id'))) {
+                                    self::calcularPreciosItem($set, $get, $get('product_id'));
+                                }
+                                self::actualizarGranTotal($get, $set);
+                            })
+                            ->columnSpan(12),
+
+                        // Fila 3 del Detalle: Control de Crédito por Perfume
+                        Select::make('pago_cuota')
+                            ->label('¿Es pago a cuotas / crédito?')
+                            ->options([
+                                'No' => 'No',
+                                'Si' => 'Sí',
+                            ])
+                            ->default('No')
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::actualizarGranTotal($get, $set);
+                            })
+                            ->columnSpan(6),
+
+                        Select::make('numero_cuota')
+                            ->label('Cantidad de Cuotas')
+                            ->options([
+                                '2 Cuotas' => '2 Cuotas',
+                                '3 Cuotas' => '3 Cuotas',
+                            ])
+                            ->required(fn (Get $get) => $get('pago_cuota') === 'Si')
+                            ->visible(fn (Get $get) => $get('pago_cuota') === 'Si')
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::actualizarGranTotal($get, $set);
+                            })
+                            ->columnSpan(6),
+
+                        // --- CAMPOS DE CUOTAS PERSISTENTES ---
+                        Placeholder::make('primera_cuota_vista')
+                            ->label('1ra Cuota')
+                            ->content(fn (Get $get) => $get('primera_cuota') ?? 'Calculando...')
+                            ->visible(fn (Get $get) => $get('pago_cuota') === 'Si')
+                            ->columnSpan(4),
+                        Hidden::make('primera_cuota')
+                            ->dehydrated(true),
+
+                        Placeholder::make('segunda_cuota_vista')
+                            ->label('2da Cuota')
+                            ->content(fn (Get $get) => $get('segunda_cuota') ?? 'Calculando...')
+                            ->visible(fn (Get $get) => $get('pago_cuota') === 'Si')
+                            ->columnSpan(4),
+                        Hidden::make('segunda_cuota')
+                            ->dehydrated(true),
+
+                        Placeholder::make('tercera_cuota_vista')
+                            ->label('3ra Cuota')
+                            ->content(fn (Get $get) => $get('tercera_cuota') ?? 'Calculando...')
+                            ->visible(fn (Get $get) => $get('pago_cuota') === 'Si' && $get('numero_cuota') === '3 Cuotas')
+                            ->columnSpan(4),
+                        Hidden::make('tercera_cuota')
+                            ->dehydrated(true),
                     ])
-                    ->columns(4)
-                    ->columnSpan(8)
+                    ->columns(12) // Estructurado en rejilla de 12 para un diseño responsivo interno completo
+                    ->columnSpan(12)
                     ->addActionLabel('Añadir otro perfume')
                     ->live()
                     ->afterStateUpdated(function (Get $get, Set $set) {
                         self::actualizarGranTotal($get, $set);
                     }),
 
-                // El Total de la venta en el lado derecho
                 TextInput::make('total_venta')
                     ->label('TOTAL DE LA VENTA')
                     ->numeric()
                     ->prefix('$')
                     ->readonly()
-                    ->columnSpan(4)
+                    ->columnSpan(12)
                     ->placeholder(function (Get $get) {
-                        // Evita el error de conversión calculando el valor inicial de forma segura como string/numeric nativo
                         $detalles = $get('detalles') ?? [];
                         return (string) collect($detalles)->filter(fn ($item) => !empty($item['subtotal']))->sum('subtotal');
                     })
@@ -151,20 +217,89 @@ class VentaForm
             ]);
     }
 
-    /**
-     * Helper para despachar el cálculo real hacia la raíz del formulario
-     */
+    public static function calcularPreciosItem(Set $set, Get $get, $productId): void
+    {
+        $product = Product::find($productId);
+
+        if ($product) {
+            // Evaluamos de forma local el método de pago elegido dentro de esta fila del repeater
+            $metodosSeleccionados = $get("metodo_pago") ?? [];
+
+            if (!is_array($metodosSeleccionados)) {
+                $metodosSeleccionados = (array) $metodosSeleccionados;
+            }
+
+            $metodosDivisa = ['Zinli', 'Wally', 'Zelle', 'USDT', 'Cash'];
+            $aplicaPrecioDivisa = !empty(array_intersect($metodosSeleccionados, $metodosDivisa));
+
+            $precioElegido = ($aplicaPrecioDivisa && !empty($product->precio_divisa))
+                ? (float) $product->precio_divisa
+                : (float) $product->retail_price;
+
+            $set("precio_unitario", $precioElegido);
+
+            $cantidad = (int) ($get("cantidad") ?? 1);
+            if ($cantidad > $product->stock) {
+                $set("cantidad", $product->stock);
+                $cantidad = $product->stock;
+            }
+
+            $set("subtotal", $cantidad * $precioElegido);
+        } else {
+            $set("precio_unitario", 0);
+            $set("subtotal", 0);
+        }
+    }
+
     public static function actualizarGranTotal(Get $get, Set $set): void
     {
-        // Buscamos los detalles subiendo los niveles del árbol de componentes de Filament v4
-        $detalles = $get('detalles') ?? $get('../../detalles') ?? [];
+        $detalles = $get('detalles') ?? [];
+        $totalVenta = 0;
 
-        $total = collect($detalles)
-            ->filter(fn ($item) => !empty($item['subtotal']))
-            ->sum('subtotal');
+        $fechaBaseInput = $get('fecha_venta') ?? now();
+        $fechaBase = Carbon::parse($fechaBaseInput);
 
-        // Seteamos el valor de manera absoluta en ambos contextos para asegurar el refresco visual
-        $set('total_venta', $total);
-        $set('../../total_venta', $total);
+        foreach ($detalles as $key => $item) {
+            $subtotalItem = (float) ($item['subtotal'] ?? 0);
+            $totalVenta += $subtotalItem;
+
+            $pagoCuota = $item['pago_cuota'] ?? 'No';
+            $numeroCuotas = $item['numero_cuota'] ?? '';
+
+            $path = "detalles.{$key}.";
+
+            if ($pagoCuota === 'Si' && $subtotalItem > 0) {
+                $fechaCuota1 = $fechaBase->format('d-m-Y');
+                $fechaCuota2 = $fechaBase->copy()->addDays(15)->format('d-m-Y');
+                $fechaCuota3 = $fechaBase->copy()->addDays(30)->format('d-m-Y');
+
+                if ($numeroCuotas === '2 Cuotas') {
+                    $montoCuota = round($subtotalItem / 2, 2);
+
+                    $set("{$path}primera_cuota", "\${$montoCuota} (Fecha: {$fechaCuota1})");
+                    $set("{$path}segunda_cuota", "\${$montoCuota} (Fecha: {$fechaCuota2})");
+                    $set("{$path}tercera_cuota", null);
+                } elseif ($numeroCuotas === '3 Cuotas') {
+                    $montoCuota = round($subtotalItem / 3, 2);
+
+                    $set("{$path}primera_cuota", "\${$montoCuota} (Fecha: {$fechaCuota1})");
+                    $set("{$path}segunda_cuota", "\${$montoCuota} (Fecha: {$fechaCuota2})");
+                    $set("{$path}tercera_cuota", "\${$montoCuota} (Fecha: {$fechaCuota3})");
+                } else {
+                    self::limpiarCuotasItem($set, $path);
+                }
+            } else {
+                self::limpiarCuotasItem($set, $path);
+            }
+        }
+
+        $set('total_venta', $totalVenta);
+    }
+
+    private static function limpiarCuotasItem(Set $set, string $path): void
+    {
+        $set("{$path}primera_cuota", null);
+        $set("{$path}segunda_cuota", null);
+        $set("{$path}tercera_cuota", null);
     }
 }

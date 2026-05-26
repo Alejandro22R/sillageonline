@@ -23,6 +23,11 @@ class ProductInfolist
                     ->placeholder('-'),
                 TextEntry::make('retail_price')
                     ->money(),
+                TextEntry::make('metodo_pago')
+                    ->placeholder('-'),
+                TextEntry::make('precio_divisa')
+                    ->money()
+                    ->placeholder('-'),
                 IconEntry::make('is_exclusive')
                     ->boolean(),
                 IconEntry::make('is_offer')

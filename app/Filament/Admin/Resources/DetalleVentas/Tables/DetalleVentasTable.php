@@ -28,6 +28,9 @@ class DetalleVentasTable
                         return $record->producto ? $record->producto->name : 'Producto no encontrado';
                     })
                     ->searchable(),
+                TextColumn::make('venta.cliente.nombre')
+                    ->label('Cliente')
+                    ->searchable(),
                 TextColumn::make('producto.marca_perfume')
                     ->label('Marca')
                     ->searchable(),

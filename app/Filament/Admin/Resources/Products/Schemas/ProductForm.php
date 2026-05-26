@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\CheckboxList; // <--- LA IMPORTACIÓN QUE FALTABA
 
 class ProductForm
 {
@@ -65,7 +66,26 @@ class ProductForm
                     ->required()
                     ->numeric()
                     ->prefix('$'),
+    CheckboxList::make('metodo_pago')
+    ->label('Métodos de Pago Aceptados')
+    ->options([
+        'USDT' => 'USDT',
+        'Zinli' => 'Zinli',
+        'Wally' => 'Wally',
+        'Cash' => 'Cash',
+        'Zelle' => 'Zelle',
+        'Pago Movil' => 'Pago Movil',
 
+    ])
+    ->columns(3) // Los organiza en 3 columnas en la pantalla para que no ocupe tanto espacio hacia abajo
+    ->required()
+    ->live(),
+
+TextInput::make('precio_divisa')
+    ->label('Precio en Divisa')
+    ->numeric()
+    ->prefix('$')
+    ->visible(fn ($get) => !empty($get('metodo_pago'))),
                 TextInput::make('wholesale_price')
                     ->label('Precio de Costo (Última Compra)')
                     ->numeric()

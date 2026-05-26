@@ -10,11 +10,22 @@ class DetalleVenta extends Model
     protected $fillable = [
         'venta_id',
         'product_id',
+        'metodo_pago',
         'cantidad',
+        'pago_cuota',
+        'numero_cuota',
+        'primera_cuota',
+        'segunda_cuota',
+        'tercera_cuota',
         'precio_unitario',
         'subtotal',
+       
+
     ];
 
+       protected $casts = [
+        'metodo_pago' => 'array',
+    ];
     // Relación con la venta principal
     public function venta(): BelongsTo
     {

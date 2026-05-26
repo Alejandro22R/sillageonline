@@ -30,6 +30,14 @@ class ProductsTable
                 TextColumn::make('retail_price')
                     ->money()
                     ->sortable(),
+              TextColumn::make('metodo_pago')
+    ->label('Métodos de Pago')
+    ->badge() // Los transforma en etiquetas visuales individuales
+    ->separator(',') // Le dice a Filament que el contenido es un array y debe separarlo
+    ->placeholder('-'),
+                TextColumn::make('precio_divisa')
+                    ->money()
+                    ->placeholder('-'),
                 IconColumn::make('is_exclusive')
                     ->boolean(),
                 IconColumn::make('is_offer')
