@@ -19,16 +19,23 @@ class StatsOverview extends BaseWidget
      */
     public static function canView(): bool
     {
-        // Si el usuario no tiene roles... 🤬 ¡Mensaje directo con botón POST integrado!
+        // Si el usuario no tiene roles... 🤬 ¡Mensaje directo con botón real corregido!
         if (auth()->user()->roles()->count() === 0) {
-            abort(403, 'TÚ NO TIENES ROL NI PERMISOS, ASÍ QUE VETE AL CARAJO.<br><br>
+            $html = '
+            <div style="font-family: sans-serif; text-align: center; padding: 60px 20px; max-width: 600px; margin: 10vh auto; background-color: #111827; border: 1px solid #1f2937; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);">
+                <h1 style="color: #EF4444; font-size: 26px; font-weight: bold; margin-bottom: 20px; letter-spacing: 0.05em;">403 | ACCESO DENEGADO</h1>
+                <p style="font-size: 16px; color: #9CA3AF; margin-bottom: 35px; line-height: 1.6; font-weight: 500;">
+                    TÚ NO TIENES ROL NI PERMISOS, ASÍ QUE VETE AL CARAJO.
+                </p>
                 <form action="'.route('filament.admin.auth.logout').'" method="POST" style="display: inline;">
                     <input type="hidden" name="_token" value="'.csrf_token().'">
-                    <button type="submit" style="background-color: #EF4444; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: background 0.2s;">
+                    <button type="submit" style="background-color: #EF4444; color: white; padding: 14px 28px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(239,68,68,0.2); transition: background 0.2s; text-transform: uppercase;">
                         Cerrar Sesión de Inmediato
                     </button>
-                </form>'
-            );
+                </form>
+            </div>';
+
+            abort(response($html, 403));
         }
 
         // Si es administrador o super_admin, se salta la regla y lo ve directo
