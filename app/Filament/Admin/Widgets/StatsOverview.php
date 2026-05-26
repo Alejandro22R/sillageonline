@@ -13,6 +13,27 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class StatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
+
+    /**
+     * 🔒 Control de Acceso nativo para Filament Shield
+     */
+    public static function canView(): bool
+    {
+        // Si el usuario no tiene roles, no puede ver el widget bajo ningún concepto
+        if (auth()->user()->roles()->count() === 0) {
+            return false;
+        }
+
+        // Si es administrador o super_admin, se salta la regla y lo ve directo
+        if (auth()->user()->hasRole(['admin', 'super_admin', 'Admin', 'Super Admin'])) {
+            return true;
+        }
+
+        // Comprueba si el rol tiene activada la casilla específica generada por Shield
+        return auth()->user()->can('widget_StatsOverview')
+            || auth()->user()->can('widget::StatsOverview');
+    }
+
     protected function getStats(): array
     {
         return [
@@ -33,13 +54,15 @@ class StatsOverview extends BaseWidget
                 ->description('Unidades disponibles')
                 ->descriptionIcon('heroicon-m-shopping-cart')
                 ->color('warning'),
+
             // Suma todos los proveedores registrados
-             Stat::make('Proveedores Registrados', Proveedor::count())
+            Stat::make('Proveedores Registrados', Proveedor::count())
                 ->description('Total de proveedores únicos')
                 ->descriptionIcon('heroicon-m-truck')
                 ->color('danger'),
+
             // Suma total de todas las compras realizadas a proveedores
-             Stat::make('Compras Totales', '$' . number_format(Compra::sum('total_compra'), 2))
+            Stat::make('Compras Totales', '$' . number_format(Compra::sum('total_compra'), 2))
                 ->description('Gastos acumulados')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('original'),
