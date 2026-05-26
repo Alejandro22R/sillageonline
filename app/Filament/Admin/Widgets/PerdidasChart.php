@@ -3,7 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Venta;
-use App\Models\Compra; // <-- Añadimos el modelo Compra aquí
+use App\Models\Compra;
 use Illuminate\Support\Facades\DB;
 use Filament\Widgets\ChartWidget;
 
@@ -13,6 +13,28 @@ class PerdidasChart extends ChartWidget
     protected ?string $heading = 'Balance: Ventas vs Compras (Inversión)';
 
     protected int | string | array $columnSpan = 'full';
+
+    /**
+     * 🔒 Control de Acceso nativo para Filament Shield
+     */
+    public static function canView(): bool
+    {
+        // Si el usuario no tiene ningún rol asignado, no puede ver la gráfica
+        if (auth()->user()->roles()->count() === 0) {
+            return false;
+        }
+
+        // Si es administrador o super_admin, pasa directo sin restricciones
+        if (auth()->user()->hasRole(['admin', 'super_admin', 'Admin', 'Super Admin'])) {
+            return true;
+        }
+
+        // Comprueba las variantes del permiso del widget creadas por Filament Shield
+        return auth()->user()->can('widget_Balance: Ventas vs Compras (Inversión)')
+            || auth()->user()->can('widget::Balance: Ventas vs Compras (Inversión)')
+            || auth()->user()->can('widget_PerdidasChart')
+            || auth()->user()->can('widget::PerdidasChart');
+    }
 
     protected function getData(): array
     {
@@ -29,7 +51,6 @@ class PerdidasChart extends ChartWidget
             ->toArray();
 
         // 2. Obtener Egresos (Compras) por mes usando 'fecha_compra'
-        // CORRECCIÓN: Ahora usamos la tabla principal Compra y su fecha real
         $egresos = Compra::select(
             DB::raw('MONTH(fecha_compra) as mes'),
             DB::raw('SUM(total_compra) as total')
