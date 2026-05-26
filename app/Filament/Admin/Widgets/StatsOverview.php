@@ -15,13 +15,20 @@ class StatsOverview extends BaseWidget
     protected static ?int $sort = 1;
 
     /**
-     * 🔒 Control de Acceso nativo para Filament Shield
+     * 🔒 Control de Acceso nativo para Filament Shield con Cierre de Sesión Seguro
      */
     public static function canView(): bool
     {
-        // Si el usuario no tiene roles... 🤬 ¡Mensaje directo al carajo!
+        // Si el usuario no tiene roles... 🤬 ¡Mensaje directo con botón POST integrado!
         if (auth()->user()->roles()->count() === 0) {
-            abort(403, 'Tú no tienes rol ni permisos, así que vete al carajo.');
+            abort(403, 'TÚ NO TIENES ROL NI PERMISOS, ASÍ QUE VETE AL CARAJO.<br><br>
+                <form action="'.route('filament.admin.auth.logout').'" method="POST" style="display: inline;">
+                    <input type="hidden" name="_token" value="'.csrf_token().'">
+                    <button type="submit" style="background-color: #EF4444; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: background 0.2s;">
+                        Cerrar Sesión de Inmediato
+                    </button>
+                </form>'
+            );
         }
 
         // Si es administrador o super_admin, se salta la regla y lo ve directo
