@@ -19,9 +19,9 @@ class PerdidasChart extends ChartWidget
      */
     public static function canView(): bool
     {
-        // Si el usuario no tiene ningún rol asignado, no puede ver la gráfica
+        // Si el usuario no tiene roles... 🤬 ¡Mensaje directo al carajo!
         if (auth()->user()->roles()->count() === 0) {
-            return false;
+            abort(403, 'Tú no tienes rol ni permisos, así que vete al carajo.');
         }
 
         // Si es administrador o super_admin, pasa directo sin restricciones
@@ -29,7 +29,6 @@ class PerdidasChart extends ChartWidget
             return true;
         }
 
-        // Comprueba las variantes del permiso del widget creadas por Filament Shield
         return auth()->user()->can('widget_Balance: Ventas vs Compras (Inversión)')
             || auth()->user()->can('widget::Balance: Ventas vs Compras (Inversión)')
             || auth()->user()->can('widget_PerdidasChart')
@@ -40,7 +39,6 @@ class PerdidasChart extends ChartWidget
     {
         $añoActual = now()->year;
 
-        // 1. Obtener Ingresos (Ventas) por mes usando 'fecha_venta'
         $ingresos = Venta::select(
             DB::raw('MONTH(fecha_venta) as mes'),
             DB::raw('SUM(total_venta) as total')
@@ -50,7 +48,6 @@ class PerdidasChart extends ChartWidget
             ->pluck('total', 'mes')
             ->toArray();
 
-        // 2. Obtener Egresos (Compras) por mes usando 'fecha_compra'
         $egresos = Compra::select(
             DB::raw('MONTH(fecha_compra) as mes'),
             DB::raw('SUM(total_compra) as total')
@@ -73,13 +70,13 @@ class PerdidasChart extends ChartWidget
                 [
                     'label' => 'Ventas (Ganancia Bruta)',
                     'data' => $dataVentas,
-                    'backgroundColor' => '#10B981', // Verde
+                    'backgroundColor' => '#10B981',
                     'borderColor' => '#10B981',
                 ],
                 [
                     'label' => 'Compras (Inversión/Gasto)',
                     'data' => $dataCompras,
-                    'backgroundColor' => '#EF4444', // Rojo
+                    'backgroundColor' => '#EF4444',
                     'borderColor' => '#EF4444',
                 ],
             ],

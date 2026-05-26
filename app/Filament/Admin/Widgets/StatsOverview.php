@@ -19,9 +19,9 @@ class StatsOverview extends BaseWidget
      */
     public static function canView(): bool
     {
-        // Si el usuario no tiene roles, no puede ver el widget bajo ningún concepto
+        // Si el usuario no tiene roles... 🤬 ¡Mensaje directo al carajo!
         if (auth()->user()->roles()->count() === 0) {
-            return false;
+            abort(403, 'Tú no tienes rol ni permisos, así que vete al carajo.');
         }
 
         // Si es administrador o super_admin, se salta la regla y lo ve directo
@@ -37,31 +37,26 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         return [
-            // Contador de Clientes
             Stat::make('Clientes Registrados', Cliente::count())
                 ->description('Total de base de datos')
                 ->descriptionIcon('heroicon-m-users')
                 ->color('info'),
 
-            // Suma total de Ventas
             Stat::make('Ventas Totales', '$' . number_format(Venta::sum('total_venta'), 2))
                 ->description('Ingresos acumulados')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),
 
-            // Suma del Stock de todos los productos
             Stat::make('Productos en Stock', Product::sum('stock'))
                 ->description('Unidades disponibles')
                 ->descriptionIcon('heroicon-m-shopping-cart')
                 ->color('warning'),
 
-            // Suma todos los proveedores registrados
             Stat::make('Proveedores Registrados', Proveedor::count())
                 ->description('Total de proveedores únicos')
                 ->descriptionIcon('heroicon-m-truck')
                 ->color('danger'),
 
-            // Suma total de todas las compras realizadas a proveedores
             Stat::make('Compras Totales', '$' . number_format(Compra::sum('total_compra'), 2))
                 ->description('Gastos acumulados')
                 ->descriptionIcon('heroicon-m-currency-dollar')
