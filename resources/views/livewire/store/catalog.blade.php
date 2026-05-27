@@ -122,16 +122,38 @@
                                         {{ $cartCount }}
                                     </span>
                                 </button>
+                                
                                 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-4 w-72 sm:w-80 bg-[#0A0A0A] border border-[#D4AF37]/30 rounded-xl shadow-2xl z-[100] p-4" style="display:none;">
                                     <h3 class="text-[#D4AF37] text-xs font-bold uppercase mb-4 tracking-widest">Carrito de Compras</h3>
-                                    <div class="max-h-60 overflow-y-auto hide-scroll space-y-4">
-                                        @foreach(session('cart', []) as $item)
-                                            <div class="flex justify-between text-xs border-b border-white/5 pb-2">
-                                                <span class="text-white uppercase">{{ $item['name'] }} (x{{ $item['quantity'] }})</span>
-                                                <span class="text-[#D4AF37] font-bold">${{ number_format($item['price'] * $item['quantity'], 2) }}</span>
+                                    
+                                    <div class="max-h-64 overflow-y-auto hide-scroll space-y-3 pr-1">
+                                        @forelse(session('cart', []) as $id => $item)
+                                            <div class="flex flex-col gap-1.5 border-b border-white/10 pb-3">
+                                                
+                                                <div class="flex justify-between items-start gap-2">
+                                                    <span class="text-white text-[10px] font-bold uppercase truncate">{{ $item['name'] }}</span>
+                                                    
+                                                    <button wire:click.stop="removeFromCart({{ $id }})" class="text-gray-500 hover:text-red-500 transition-colors p-0.5 flex-shrink-0" title="Eliminar producto">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    </button>
+                                                </div>
+                                                
+                                                <div class="flex justify-between items-end">
+                                                    
+                                                    <div class="flex items-center bg-[#111] border border-[#D4AF37]/30 rounded px-1.5 py-0.5 shadow-inner">
+                                                        <button wire:click.stop="decreaseQuantity({{ $id }})" class="text-gray-400 hover:text-[#D4AF37] px-1 text-sm font-black transition-colors leading-none">-</button>
+                                                        <span class="text-white text-[10px] font-black w-4 text-center select-none">{{ $item['quantity'] }}</span>
+                                                        <button wire:click.stop="increaseQuantity({{ $id }})" class="text-gray-400 hover:text-[#D4AF37] px-1 text-sm font-black transition-colors leading-none">+</button>
+                                                    </div>
+                                                    
+                                                    <span class="text-[#D4AF37] font-black text-xs">${{ number_format($item['price'] * $item['quantity'], 2) }}</span>
+                                                </div>
                                             </div>
-                                        @endforeach
+                                        @empty
+                                            <p class="text-gray-500 text-[10px] uppercase tracking-widest text-center py-4 font-bold">El carrito está vacío</p>
+                                        @endforelse
                                     </div>
+                                    
                                     @if($cartCount > 0)
                                         <button wire:click="checkoutWhatsApp" class="w-full bg-[#D4AF37] text-black mt-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest">Pedir por WhatsApp</button>
                                     @endif
@@ -181,15 +203,28 @@
                         </button>
                     </div>
 
-                    <div class="max-h-[350px] overflow-y-auto hide-scroll p-5 space-y-5">
+                    <div class="max-h-[350px] overflow-y-auto hide-scroll p-5 space-y-4">
                         @php $cart = session('cart', []); @endphp
                         @forelse($cart as $id => $item)
-                            <div class="flex justify-between items-center text-sm border-b border-white/5 pb-4">
-                                <div class="flex-1 pr-4">
-                                    <p class="font-bold text-white uppercase tracking-wider">{{ $item['name'] }}</p>
-                                    <p class="text-gray-400 text-xs mt-1">Cantidad: <span class="text-white font-bold">{{ $item['quantity'] }}</span></p>
+                            <div class="flex flex-col gap-2 border-b border-white/5 pb-4">
+                                
+                                <div class="flex justify-between items-start gap-3">
+                                    <p class="font-bold text-white uppercase tracking-wider text-sm truncate">{{ $item['name'] }}</p>
+                                    
+                                    <button wire:click.stop="removeFromCart({{ $id }})" class="text-gray-500 hover:text-red-500 transition-colors p-1 flex-shrink-0" title="Eliminar">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
                                 </div>
-                                <p class="text-[#D4AF37] font-bold text-base">${{ number_format($item['price'] * $item['quantity'], 2) }}</p>
+                                
+                                <div class="flex justify-between items-end mt-1">
+                                    <div class="flex items-center bg-[#111] border border-[#D4AF37]/30 rounded-lg px-2 py-1 shadow-inner">
+                                        <button wire:click.stop="decreaseQuantity({{ $id }})" class="text-gray-400 hover:text-[#D4AF37] px-2 text-lg font-black transition-colors leading-none">-</button>
+                                        <span class="text-white text-xs font-black w-6 text-center select-none">{{ $item['quantity'] }}</span>
+                                        <button wire:click.stop="increaseQuantity({{ $id }})" class="text-gray-400 hover:text-[#D4AF37] px-2 text-lg font-black transition-colors leading-none">+</button>
+                                    </div>
+                                    
+                                    <p class="text-[#D4AF37] font-bold text-base">${{ number_format($item['price'] * $item['quantity'], 2) }}</p>
+                                </div>
                             </div>
                         @empty
                             <div class="py-10 text-center flex flex-col items-center justify-center">
@@ -229,26 +264,26 @@
         <div class="absolute top-0 left-[-10%] w-[500px] h-[500px] bg-[#D4AF37]/20 rounded-full blur-[150px] pointer-events-none"></div>
 
         <section class="relative h-[70vh] flex flex-col items-center justify-center text-center px-4">
-    <div class="relative z-10 flex flex-col items-center">
-        
-        <img src="{{ asset('img/sillage.png') }}" 
-             alt="Sillage Parfums Logo" 
-             class="h-24 md:h-32 w-auto object-contain mb-8 animate-fade-in"
-        >
+            <div class="relative z-10 flex flex-col items-center">
+                
+                <img src="{{ asset('img/sillage.png') }}" 
+                     alt="Sillage Parfums Logo" 
+                     class="h-24 md:h-32 w-auto object-contain mb-8 animate-fade-in"
+                >
 
-        <p class="text-[#D4AF37] tracking-[0.4em] uppercase text-xs md:text-sm mb-4 font-bold">
-            El Arte de la Perfumería Árabe
-        </p>
+                <p class="text-[#D4AF37] tracking-[0.4em] uppercase text-xs md:text-sm mb-4 font-bold">
+                    El Arte de la Perfumería Árabe
+                </p>
 
-        <h1 class="text-7xl md:text-9xl font-cinzel font-bold tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-[#D4AF37] drop-shadow-2xl">
-            Sillage
-        </h1>
+                <h1 class="text-7xl md:text-9xl font-cinzel font-bold tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-[#D4AF37] drop-shadow-2xl">
+                    Sillage
+                </h1>
 
-        <p class="mt-4 text-xl tracking-[0.6em] text-gray-400 uppercase font-light">
-            Parfums
-        </p>
-    </div>
-</section>
+                <p class="mt-4 text-xl tracking-[0.6em] text-gray-400 uppercase font-light">
+                    Parfums
+                </p>
+            </div>
+        </section>
 
         <main class="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 space-y-32">
             

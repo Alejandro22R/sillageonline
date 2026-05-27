@@ -33,6 +33,43 @@ class Catalog extends Component
         $this->dispatch('cartUpdated');
     }
 
+    // Sumar 1 a la cantidad
+    public function increaseQuantity($productId)
+    {
+        $cart = Session::get('cart', []);
+        if (isset($cart[$productId])) {
+            $cart[$productId]['quantity']++;
+            Session::put('cart', $cart);
+            $this->dispatch('cartUpdated');
+        }
+    }
+
+    // Restar 1 a la cantidad (Si llega a 0, se elimina)
+    public function decreaseQuantity($productId)
+    {
+        $cart = Session::get('cart', []);
+        if (isset($cart[$productId])) {
+            if ($cart[$productId]['quantity'] > 1) {
+                $cart[$productId]['quantity']--;
+            } else {
+                unset($cart[$productId]);
+            }
+            Session::put('cart', $cart);
+            $this->dispatch('cartUpdated');
+        }
+    }
+
+    // Eliminar completamente del carrito
+    public function removeFromCart($productId)
+    {
+        $cart = Session::get('cart', []);
+        if (isset($cart[$productId])) {
+            unset($cart[$productId]);
+            Session::put('cart', $cart);
+            $this->dispatch('cartUpdated');
+        }
+    }
+
     // Calcular el total del carrito
     public function getTotal()
     {

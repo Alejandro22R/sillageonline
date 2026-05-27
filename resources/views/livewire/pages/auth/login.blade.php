@@ -28,24 +28,7 @@ new #[Layout('layouts.guest')] class extends Component
     <div style="text-align: center !important; width: 100% !important; margin-bottom: 2rem !important; display: flex !important; flex-direction: column !important; align-items: center !important;">
 
         <div style="margin-bottom: 1rem !important; display: inline-block !important;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="55" height="55" fill="none" stroke="#d4af37" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 2c0 1 1 1.5 2 1.5s2-.5 2-1.5" />
-                <path d="M11 4c0 .8.5 1.2 1 1.2s1-.4 1-1.2" />
-                <path d="M9 7h6v2H9z" fill="#d4af37" opacity="0.2"/>
-                <circle cx="12" cy="6" r="1" fill="#d4af37"/>
-                <path d="M10 9h4v2h-4z" />
-                <path d="M7 11.5c0-1 1-1.5 2-1.5h6c1 0 2 .5 2 1.5v6c0 2.5-2 4.5-5 4.5s-5-2-5-4.5v-6z" fill="url(#gold-gradient)" opacity="0.1" />
-                <path d="M7 11.5c0-1 1-1.5 2-1.5h6c1 0 2 .5 2 1.5v6c0 2.5-2 4.5-5 4.5s-5-2-5-4.5v-6z" />
-                <circle cx="12" cy="16" r="2.5" />
-                <path d="M12 13.5v5M9.5 16h5" opacity="0.7"/>
-                <defs>
-                    <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#b3923b" />
-                        <stop offset="50%" stop-color="#d4af37" />
-                        <stop offset="100%" stop-color="#f3e5ab" />
-                    </linearGradient>
-                </defs>
-            </svg>
+            <img src="{{ asset('img/sillage.png') }}" alt="Sillage Parfums" style="width: 75px; height: auto; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
         </div>
 
         <h2 style="font-family: 'Playfair Display', serif; color: #ffffff; font-size: 1.4rem; letter-spacing: 0.1em; font-weight: 400; margin: 0 auto !important; text-align: center !important; display: block !important;">
