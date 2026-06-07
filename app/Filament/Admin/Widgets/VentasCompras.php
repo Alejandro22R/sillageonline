@@ -7,13 +7,17 @@ use App\Models\Compra;
 use Illuminate\Support\Facades\DB;
 use Filament\Widgets\ChartWidget;
 
-class PerdidasChart extends ChartWidget
+class VentasCompras extends ChartWidget
 {
-    protected static ?int $sort = 2;
-    protected ?string $heading = 'Balance: Ventas vs Compras (Inversión)';
+   // Decimos que salga en la posición 2 (abajo de las tarjetas)
 
-    protected int | string | array $columnSpan = 'full';
+    protected ?string $heading = 'Balance: Ventas vs Compras de Perfumes  (Inversión)';
 
+    protected static ?int $sort = 2; // Va en la segunda fila
+
+protected int | string | array $columnSpan = [
+    'lg' => 1, // Ocupa la mitad izquierda de la pantalla
+];
     /**
      * 🔒 Control de Acceso nativo para Filament Shield con Cierre de Sesión Seguro
      */

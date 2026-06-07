@@ -7,13 +7,18 @@ use App\Models\Venta;
 use App\Models\Product;
 use App\Models\Proveedor;
 use App\Models\Compra;
+use App\Models\Expense;
+use App\Services\BcvService;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverview extends BaseWidget
 {
-    protected static ?int $sort = 1;
 
+protected static ?int $sort = 1;
+
+// Esto obliga a las tarjetas a usar las 12 columnas en pantallas medianas/grandes
+protected int | string | array $columnSpan = 'full';
     /**
      * 🔒 Control de Acceso nativo para Filament Shield con Cierre de Sesión Seguro
      */
@@ -56,11 +61,11 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-users')
                 ->color('info'),
 
-            Stat::make('Ventas Totales', '$' . number_format(Venta::sum('total_venta'), 2))
-                ->description('Ingresos acumulados')
-                ->descriptionIcon('heroicon-m-banknotes')
-                ->color('success'),
-
+           // Cambia tu bloque de Ventas Totales por este:
+Stat::make('Ventas Totales', '$' . number_format(Venta::sum('total_venta'), 2))
+    ->description('Ingresos: $' . number_format(Venta::sum('total_venta'), 2) . ' | Bs. ' . number_format(Venta::sum('total_venta') * BcvService::getTasaUsd(), 2))
+    ->descriptionIcon('heroicon-m-banknotes')
+    ->color('success'),
             Stat::make('Productos en Stock', Product::sum('stock'))
                 ->description('Unidades disponibles')
                 ->descriptionIcon('heroicon-m-shopping-cart')
@@ -70,11 +75,15 @@ class StatsOverview extends BaseWidget
                 ->description('Total de proveedores únicos')
                 ->descriptionIcon('heroicon-m-truck')
                 ->color('danger'),
-
-            Stat::make('Compras Totales', '$' . number_format(Compra::sum('total_compra'), 2))
-                ->description('Gastos acumulados')
-                ->descriptionIcon('heroicon-m-currency-dollar')
-                ->color('original'),
+// Cambia tu bloque de Compras Totales por este:
+Stat::make('Compras Totales', '$' . number_format(Compra::sum('total_compra'), 2))
+    ->description('Gastos: $' . number_format(Compra::sum('total_compra'), 2) . ' | Bs. ' . number_format(Compra::sum('total_compra') * BcvService::getTasaUsd(), 2))
+    ->descriptionIcon('heroicon-m-currency-dollar')
+    ->color('secondary'),
+           Stat::make('Gastos Totales', '$' . number_format(Expense::sum('amount'), 2))
+    ->description('Gastos: $' . number_format(Expense::sum('amount'), 2) . ' | Bs. ' . number_format(Expense::sum('amount') * BcvService::getTasaUsd(), 2))
+    ->descriptionIcon('heroicon-m-credit-card')
+    ->color('secondary'),
         ];
     }
 }

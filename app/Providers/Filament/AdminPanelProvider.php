@@ -35,15 +35,15 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('img/sillage.png'))
             ->pages([
                 Dashboard::class,
-                
             ])
+
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
             ->widgets([
               //  AccountWidget::class,
                 //FilamentInfoWidget::class,
                 \App\Filament\Admin\Widgets\StatsOverview::class,
-                 \App\Filament\Admin\Widgets\PerdidasChart::class,
-
+                \App\Filament\Admin\Widgets\VentasCompras::class,
+                \App\Filament\Admin\Widgets\Gastos::class,
             ])
             ->middleware([
                 EncryptCookies::class,

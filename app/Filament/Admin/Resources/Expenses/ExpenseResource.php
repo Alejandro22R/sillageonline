@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 class ExpenseResource extends Resource
 {
     protected static ?string $model = Expense::class;
+    
 
     // Cambiamos el ícono a un fajo de billetes para representar finanzas
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
