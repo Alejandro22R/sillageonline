@@ -14,6 +14,11 @@ class Giveaway extends Component
 
     public function pickWinner()
     {
+
+    dd([
+    'token'   => config('services.instagram.access_token'),
+    'user_id' => config('services.instagram.user_id'),
+]);
         $this->validate([
             'mediaUrl' => 'required|url'
         ], [
@@ -68,7 +73,6 @@ class Giveaway extends Component
 
             $this->winner = $valid[array_rand($valid)];
 
-            // Dispara el evento para que Alpine.js inicie la cuenta regresiva
             $this->dispatch('winner-found');
 
         } catch (\Exception $e) {
