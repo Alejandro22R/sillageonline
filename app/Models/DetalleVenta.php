@@ -19,7 +19,7 @@ class DetalleVenta extends Model
         'tercera_cuota',
         'precio_unitario',
         'subtotal',
-       
+
 
     ];
 
@@ -37,5 +37,9 @@ class DetalleVenta extends Model
     public function producto(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+    public function cuotas(): HasMany
+    {
+        return $this->hasMany(Cuota::class, 'detalle_venta_id');
     }
 }
