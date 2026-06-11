@@ -100,7 +100,7 @@ class Giveaway extends Component
     private function fetchAllComments(string $mediaId, string $token): array
     {
         $comments = [];
-        $url = "https://graph.facebook.com/v19.0/{$mediaId}/comments?fields=username,text,timestamp&limit=100&access_token={$token}";
+            $url = "https://graph.facebook.com/v21.0/{$igUserId}/media?fields=id,shortcode&limit=25&access_token={$token}";
 
         while ($url) {
             $response = Http::timeout(15)->get($url)->json();
