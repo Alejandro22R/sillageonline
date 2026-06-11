@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+   'instagram' => [
+        'access_token' => env('IG_ACCESS_TOKEN'),
+        'user_id'      => env('IG_USER_ID'),
+        'username'     => env('IG_USERNAME'),
+    ],
+
 ];
