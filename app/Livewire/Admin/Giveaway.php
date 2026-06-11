@@ -15,10 +15,6 @@ class Giveaway extends Component
     public function pickWinner()
     {
 
-    dd([
-    'token'   => config('services.instagram.access_token'),
-    'user_id' => config('services.instagram.user_id'),
-]);
         $this->validate([
             'mediaUrl' => 'required|url'
         ], [
