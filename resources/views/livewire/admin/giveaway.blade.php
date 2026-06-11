@@ -186,7 +186,7 @@
                         @click="revealed = false; countdown = null;"
                         class="reroll-btn"
                     >
-                        ↺ Elegir otro ganador (Mismo post)
+                        ↺ Elegir otro ganador
                     </button>
 
                     <button
@@ -195,7 +195,6 @@
                         class="reroll-btn"
                         style="margin-top: 0.5rem; border-color: transparent; opacity: 0.6;"
                     >
-                        ← Usar un enlace diferente
                     </button>
                 </div>
             @endif
