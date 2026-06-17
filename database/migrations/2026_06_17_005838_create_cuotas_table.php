@@ -19,7 +19,7 @@ return new class extends Migration
         $table->integer('cuota_pagada');
         $table->date('fecha_pago');
         $table->string('metodo_pago')->nullable();
-         $table->enum('estado', ['pendiente', 'pagada'])->default('pendiente');
+         $table->enum('estado', ['pendiente', 'pagado'])->default('pendiente');
         $table->string('descripcion')->nullable();
 
         $table->timestamps();
