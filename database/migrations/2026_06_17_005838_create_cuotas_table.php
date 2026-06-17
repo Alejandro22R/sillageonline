@@ -15,7 +15,7 @@ return new class extends Migration
         $table->id();
         $table->foreignId('detalle_venta_id')->constrained('detalle_ventas')->onDelete('cascade');
         $table->decimal('monto_cuota', 10, 2);
-        $table->string('numero_cuota', 50);
+        $table->string('numero_cuota');
         $table->integer('cuota_pagada');
         $table->date('fecha_pago');
         $table->string('metodo_pago')->nullable();
