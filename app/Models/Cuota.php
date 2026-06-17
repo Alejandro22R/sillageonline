@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,17 +9,12 @@ class Cuota extends Model
     protected $fillable = [
         'detalle_venta_id',
         'numero_cuota',
-        'monto_cuota',
-        'metodo_pago',
         'cuota_pagada',
-        'fecha_vencimiento',
+        'monto_cuota',
         'fecha_pago',
+        'metodo_pago',
         'estado',
-    ];
-
-    // AGREGA ESTO:
-    protected $casts = [
-        'cuota_pagada' => 'array',
+        'descripcion',
     ];
 
     public function detalleVenta(): BelongsTo

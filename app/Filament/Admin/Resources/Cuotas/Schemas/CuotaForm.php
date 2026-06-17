@@ -2,92 +2,106 @@
 
 namespace App\Filament\Admin\Resources\Cuotas\Schemas;
 
-use App\Models\DetalleVenta;
-use Filament\Schemas\Schema;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\CheckboxList;
-use Illuminate\Support\Carbon;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use App\Models\DetalleVenta;
 
 class CuotaForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components([
-            Select::make('detalle_venta_id')
-                ->label('Venta')
+        return $schema
+            ->components([
+                Select::make('detalle_venta_id')
+    ->label('Venta (Cliente - Producto)')
+    ->relationship('detalleVenta', 'id')
+    ->getOptionLabelFromRecordUsing(fn ($record) =>
+        ($record->venta->cliente->nombre ?? 'N/A') . ' - ' . ($record->producto->name ?? 'N/A')
+    )
+    ->searchable()
+    ->preload()
+    ->live()
+    // NUEVO: Esto permite buscar por nombre de cliente o nombre de producto
+    ->getSearchResultsUsing(function (string $search): array {
+        return \App\Models\DetalleVenta::query()
+            ->whereHas('venta.cliente', fn ($query) => $query->where('nombre', 'like', "%{$search}%"))
+            ->orWhereHas('producto', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+            ->get()
+            ->mapWithKeys(fn ($record) => [
+                $record->id => ($record->venta->cliente->nombre ?? 'N/A') . ' - ' . ($record->producto->name ?? 'N/A')
+            ])
+            ->toArray();
+    })
+    ->afterStateUpdated(function ($state, $set) {
+        self::cargarDatos($state, $set);
+    })
+    ->afterStateHydrated(function ($state, $set) {
+        self::cargarDatos($state, $set);
+    })
+    ->required(),
 
-                ->relationship('detalleVenta', 'id', fn ($query) => $query->where('pago_cuota', 'Si'))
-                ->getOptionLabelFromRecordUsing(fn (DetalleVenta $record) => "Venta #{$record->id} - Total: {$record->subtotal}")
-                ->required()
-                ->live()
+                TextInput::make('precio_perfume')
+                    ->label('Precio del Producto')
+                    ->disabled()
+                    ->dehydrated()
+                    ->prefix('$'),
 
-                ->afterStateUpdated(function ($livewire, $state) {
-                    $venta = DetalleVenta::find($state);
-                    if ($venta) {
-                        $numCuotas = (int) filter_var($venta->numero_cuota, FILTER_SANITIZE_NUMBER_INT);
-                        $monto = $numCuotas > 0 ? ($venta->subtotal / $numCuotas) : $venta->subtotal;
+                TextInput::make('numero_cuota')
+                    ->label('Cuotas totales acordadas')
+                    ->disabled()
+                    ->dehydrated(),
 
-                        $livewire->form->fill([
-                            'detalle_venta_id' => $state,
-                            'numero_cuota' => $numCuotas,
-                            'monto_cuota' => number_format($monto, 2, '.', ''),
-                        ]);
-                    }
-                }),
+                Select::make('cuota_pagada')
+                    ->label('¿Qué número de cuota estás pagando?')
+                    ->options(function ($get) {
+                        $total = (int) $get('numero_cuota');
+                        if ($total <= 0) return [];
+                        return collect(range(1, $total))->mapWithKeys(fn ($i) => [$i => "Cuota {$i}"])->toArray();
+                    })
+                    ->required()
+                    ->live(),
 
-            CheckboxList::make('cuota_pagada')
-                ->label('Seleccione las cuotas a pagar')
-                ->options(function ($get) {
-                    $num = (int) $get('numero_cuota');
-                    $options = [];
-                    for ($i = 1; $i <= $num; $i++) { $options[$i] = "Cuota #{$i}"; }
-                    return $options;
-                })
-                ->columns(3)
-                ->dehydrated()
-                ->live()
-                ->afterStateUpdated(function ($livewire, $state, $get) {
-                    if (empty($state)) return;
+                Select::make('metodo_pago')
+                    ->options([
+                        'Pago Movil' => 'Pago Movil', 'USDT' => 'USDT', 'Zinli' => 'Zinli',
+                        'Wally' => 'Wally', 'Cash' => 'Cash', 'Zelle' => 'Zelle',
+                    ])
+                    ->label('Método de Pago')
+                    ->required(),
 
-                    $venta = DetalleVenta::find($get('detalle_venta_id'));
-                    if (!$venta) return;
+                TextInput::make('monto_cuota')
+                    ->label('Monto Pagado')
+                    ->numeric()
+                    ->prefix('$')
+                    ->required(),
 
-                    // Tomamos la última cuota seleccionada para definir la fecha de vencimiento
-                    $ultimaCuota = max($state);
+                TextInput::make('descripcion')
+                    ->label('Descripción/Detalle')
+                    ->placeholder('Ej: Pago de cuota')
+                    ->required(),
 
-                    $columna = match($ultimaCuota) {
-                        1 => 'primera_cuota',
-                        2 => 'segunda_cuota',
-                        3 => 'tercera_cuota',
-                        default => 'primera_cuota',
-                    };
+                DatePicker::make('fecha_pago')
+                    ->label('Fecha del Pago')
+                    ->default(now()),
 
-                    $textoFecha = $venta->{$columna};
-                    if (preg_match('/(\d{2}-\d{2}-\d{4})/', $textoFecha, $matches)) {
-                        $fecha = Carbon::createFromFormat('d-m-Y', $matches[1])->format('Y-m-d');
-                        $livewire->form->fill(['fecha_vencimiento' => $fecha]);
-                    }
-                }),
+                Select::make('estado')
+                    ->label('Estado')
+                    ->options(['pendiente' => 'Pendiente', 'pagado' => 'Pagado'])
+                    ->default('pagado')
+                    ->required(),
+            ]);
+    }
 
-            TextInput::make('numero_cuota')->required()->numeric(),
-            TextInput::make('monto_cuota')->required()->numeric(),
-
-            Select::make('metodo_pago')
-                ->options([
-                    'Pago Movil' => 'Pago Movil', 'USDT' => 'USDT', 'Zinli' => 'Zinli',
-                    'Wally' => 'Wally', 'Cash' => 'Cash', 'Zelle' => 'Zelle'
-                ])
-                ->required(),
-
-            DatePicker::make('fecha_vencimiento')->required(),
-            DatePicker::make('fecha_pago'),
-
-            Select::make('estado')
-                ->options(['pendiente' => 'Pendiente', 'pagado' => 'Pagado'])
-                ->default('pendiente')
-                ->required(),
-        ]);
+    // Método auxiliar para no duplicar código
+    protected static function cargarDatos($state, $set)
+    {
+        $detalle = DetalleVenta::find($state);
+        if ($detalle) {
+            $set('precio_perfume', $detalle->precio_unitario ?? 0);
+            $set('numero_cuota', $detalle->numero_cuota ?? 0);
+        }
     }
 }

@@ -5,9 +5,7 @@ namespace App\Filament\Admin\Resources\Cuotas;
 use App\Filament\Admin\Resources\Cuotas\Pages\CreateCuota;
 use App\Filament\Admin\Resources\Cuotas\Pages\EditCuota;
 use App\Filament\Admin\Resources\Cuotas\Pages\ListCuotas;
-use App\Filament\Admin\Resources\Cuotas\Pages\ViewCuota;
 use App\Filament\Admin\Resources\Cuotas\Schemas\CuotaForm;
-use App\Filament\Admin\Resources\Cuotas\Schemas\CuotaInfolist;
 use App\Filament\Admin\Resources\Cuotas\Tables\CuotasTable;
 use App\Models\Cuota;
 use BackedEnum;
@@ -29,11 +27,6 @@ class CuotaResource extends Resource
         return CuotaForm::configure($schema);
     }
 
-    public static function infolist(Schema $schema): Schema
-    {
-        return CuotaInfolist::configure($schema);
-    }
-
     public static function table(Table $table): Table
     {
         return CuotasTable::configure($table);
@@ -51,7 +44,6 @@ class CuotaResource extends Resource
         return [
             'index' => ListCuotas::route('/'),
             'create' => CreateCuota::route('/create'),
-            'view' => ViewCuota::route('/{record}'),
             'edit' => EditCuota::route('/{record}/edit'),
         ];
     }
