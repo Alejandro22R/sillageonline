@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('cuotas', function (Blueprint $table) {
         $table->id();
         $table->foreignId('detalle_venta_id')->constrained('detalle_ventas')->onDelete('cascade');
-        $table->decimal('monto', 10, 2);
+        $table->decimal('monto_cuota', 10, 2);
         $table->integer('numero_cuota');
         $table->integer('cuota_pagada');
         $table->date('fecha_pago');
