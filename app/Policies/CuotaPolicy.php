@@ -3,15 +3,15 @@
 namespace App\Policies;
 
 use App\Models\Cuota;
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\User as AuthUser;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CuotaPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:Cuota');
     }
@@ -19,7 +19,7 @@ class CuotaPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Cuota $cuota): bool
+    public function view(AuthUser $authUser, Cuota $cuota): bool
     {
        return $authUser->can('View:Cuota');
     }
@@ -27,7 +27,7 @@ class CuotaPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
         return $authUser->can('Create:Cuota');
     }
@@ -35,7 +35,7 @@ class CuotaPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Cuota $cuota): bool
+    public function update(AuthUser $authUser, Cuota $cuota): bool
     {
         return $authUser->can('Update:Cuota');
     }
@@ -43,7 +43,7 @@ class CuotaPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Cuota $cuota): bool
+    public function delete(AuthUser $authUser, Cuota $cuota): bool
     {
         return $authUser->can('Delete:Cuota');
     }
