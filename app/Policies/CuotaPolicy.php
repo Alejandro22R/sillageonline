@@ -1,54 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Cuota;
-use App\Models\User as AuthUser;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CuotaPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
+    use HandlesAuthorization;
+    
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:Cuota');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(AuthUser $authUser, Cuota $cuota): bool
     {
-       return $authUser->can('View:Cuota');
+        return $authUser->can('View:Cuota');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(AuthUser $authUser): bool
     {
         return $authUser->can('Create:Cuota');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(AuthUser $authUser, Cuota $cuota): bool
     {
         return $authUser->can('Update:Cuota');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(AuthUser $authUser, Cuota $cuota): bool
     {
         return $authUser->can('Delete:Cuota');
     }
 
-  public function deleteAny(AuthUser $authUser): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
         return $authUser->can('DeleteAny:Cuota');
     }
@@ -82,5 +71,5 @@ class CuotaPolicy
     {
         return $authUser->can('Reorder:Cuota');
     }
- //ya sabes papy
+
 }
