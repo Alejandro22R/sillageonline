@@ -7,8 +7,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Forms\Components\CheckboxList; // <--- LA IMPORTACIÓN QUE FALTABA
+use Filament\Forms\Components\CheckboxList;
 
 class ProductForm
 {
@@ -16,7 +15,6 @@ class ProductForm
     {
         return $form
             ->schema([
-                // 1. Selector con la lógica de limpieza al guardar
                 Select::make('name')
                     ->label('Seleccionar Perfume del Inventario')
                     ->options(function () {
@@ -33,9 +31,18 @@ class ProductForm
                     ->searchable()
                     ->required()
                     ->live()
-                    // ESTA ES LA SOLUCIÓN: Antes de guardar, extraemos solo el nombre
+                    // Reconstrucción al cargar (Edición)
+                    ->afterStateHydrated(function ($component, $state, $record) {
+                        if ($record && !str_contains($state, '|')) {
+                            $detalle = DetalleCompra::where('nombre_perfume', $state)->first();
+                            if ($detalle) {
+                                $component->state($state . '|' . $detalle->marca_perfume);
+                            }
+                        }
+                    })
+                    // Limpieza al guardar
                     ->dehydrateStateUsing(fn ($state) => explode('|', $state)[0] ?? $state)
-                    ->afterStateUpdated(function ($state, Set $set) {
+                    ->afterStateUpdated(function ($state, $set) {
                         if (blank($state)) return;
 
                         [$nombre, $marca] = explode('|', $state);
@@ -66,26 +73,23 @@ class ProductForm
                     ->required()
                     ->numeric()
                     ->prefix('$'),
-    CheckboxList::make('metodo_pago')
-    ->label('Métodos de Pago Aceptados')
-    ->options([
-        'USDT' => 'USDT',
-        'Zinli' => 'Zinli',
-        'Wally' => 'Wally',
-        'Cash' => 'Cash',
-        'Zelle' => 'Zelle',
-        'Pago Movil' => 'Pago Movil',
 
-    ])
-    ->columns(3) // Los organiza en 3 columnas en la pantalla para que no ocupe tanto espacio hacia abajo
-    ->required()
-    ->live(),
+                CheckboxList::make('metodo_pago')
+                    ->label('Métodos de Pago Aceptados')
+                    ->options([
+                        'USDT' => 'USDT', 'Zinli' => 'Zinli', 'Wally' => 'Wally',
+                        'Cash' => 'Cash', 'Zelle' => 'Zelle', 'Pago Movil' => 'Pago Movil',
+                    ])
+                    ->columns(3)
+                    ->required()
+                    ->live(),
 
-TextInput::make('precio_divisa')
-    ->label('Precio en Divisa')
-    ->numeric()
-    ->prefix('$')
-    ->visible(fn ($get) => !empty($get('metodo_pago'))),
+                TextInput::make('precio_divisa')
+                    ->label('Precio en Divisa')
+                    ->numeric()
+                    ->prefix('$')
+                    ->visible(fn ($get) => !empty($get('metodo_pago'))),
+
                 TextInput::make('wholesale_price')
                     ->label('Precio de Costo (Última Compra)')
                     ->numeric()
@@ -96,16 +100,17 @@ TextInput::make('precio_divisa')
                     ->label('Inventario Total de esta Marca')
                     ->numeric()
                     ->required(),
+
                 TextInput::make('description')
                     ->label('Descripción del Perfume'),
 
                 FileUpload::make('image')
-    ->label('Imagen del Perfume')
-    ->image()
-    ->directory('products')
-    ->disk('public')
-    ->maxSize(5120) // <--- Añade esta línea (5120 KB = 5 MB)
-    ->columnSpanFull(),
+                    ->label('Imagen del Perfume')
+                    ->image()
+                    ->directory('products')
+                    ->disk('public')
+                    ->maxSize(5120)
+                    ->columnSpanFull(),
 
                 Toggle::make('is_exclusive')
                     ->label('Colección Exclusiva')

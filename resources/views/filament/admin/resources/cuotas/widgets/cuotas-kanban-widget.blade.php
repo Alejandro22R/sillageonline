@@ -1,20 +1,20 @@
 <div class="space-y-6">
 
     {{-- ── Stats row ── --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-4 py-3">
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="px-4 py-3 bg-white shadow-sm rounded-xl dark:bg-gray-900 ring-1 ring-gray-950/5 dark:ring-white/10">
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Total cuotas</p>
             <p class="mt-1 text-2xl font-semibold text-gray-950 dark:text-white">{{ $this->stats['total'] }}</p>
         </div>
-        <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-4 py-3">
+        <div class="px-4 py-3 bg-white shadow-sm rounded-xl dark:bg-gray-900 ring-1 ring-gray-950/5 dark:ring-white/10">
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Pagadas</p>
             <p class="mt-1 text-2xl font-semibold text-success-600 dark:text-success-400">{{ $this->stats['pagadas'] }}</p>
         </div>
-        <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-4 py-3">
+        <div class="px-4 py-3 bg-white shadow-sm rounded-xl dark:bg-gray-900 ring-1 ring-gray-950/5 dark:ring-white/10">
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Pendientes</p>
             <p class="mt-1 text-2xl font-semibold text-warning-600 dark:text-warning-400">{{ $this->stats['pendientes'] }}</p>
         </div>
-        <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-4 py-3">
+        <div class="px-4 py-3 bg-white shadow-sm rounded-xl dark:bg-gray-900 ring-1 ring-gray-950/5 dark:ring-white/10">
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Recaudado</p>
             <p class="mt-1 text-2xl font-semibold text-gray-950 dark:text-white">${{ number_format($this->stats['recaudado'], 2) }}</p>
         </div>
@@ -62,7 +62,7 @@
             <p class="text-sm">No se encontraron cuotas con los filtros aplicados.</p>
         </div>
     @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($this->cuotas as $cuota)
                 @php
                     $cliente        = $cuota->detalleVenta?->venta?->cliente;
@@ -91,17 +91,17 @@
                     $editUrl = \App\Filament\Admin\Resources\Cuotas\CuotaResource::getUrl('edit', ['record' => $cuota]);
                 @endphp
 
-                <div class="flex flex-col rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 hover:shadow-md transition-shadow duration-200">
+                <div class="flex flex-col p-5 transition-shadow duration-200 bg-white shadow-sm rounded-xl dark:bg-gray-900 ring-1 ring-gray-950/5 dark:ring-white/10 hover:shadow-md">
 
                     {{-- Cabecera --}}
                     <div class="flex items-start justify-between gap-3 mb-4">
-                        <div class="flex items-center gap-3 min-w-0">
+                        <div class="flex items-center min-w-0 gap-3">
                             <div class="flex-shrink-0 w-10 h-10 rounded-full {{ $tono['bg'] }} {{ $tono['text'] }} flex items-center justify-center text-sm font-semibold">
                                 {{ $iniciales }}
                             </div>
                             <div class="min-w-0">
-                                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ $nombreCliente }}</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $nombreProducto }}</p>
+                                <p class="text-sm font-semibold text-gray-900 truncate dark:text-white">{{ $nombreCliente }}</p>
+                                <p class="text-xs text-gray-500 truncate dark:text-gray-400">{{ $nombreProducto }}</p>
                             </div>
                         </div>
                         @if ($esPagada)
@@ -125,11 +125,11 @@
                             <div class="flex gap-1" role="progressbar" aria-valuenow="{{ $pagadasHasta }}" aria-valuemax="{{ $totalCuotas }}">
                                 @for ($i = 1; $i <= $totalCuotas; $i++)
                                     @if ($i < $cuotaActual)
-                                        <div class="h-2 flex-1 rounded-full bg-success-500 dark:bg-success-400"></div>
+                                        <div class="flex-1 h-2 rounded-full bg-success-500 dark:bg-success-400"></div>
                                     @elseif ($i === $cuotaActual)
                                         <div class="h-2 flex-1 rounded-full {{ $esPagada ? 'bg-success-500 dark:bg-success-400' : 'bg-warning-400' }}"></div>
                                     @else
-                                        <div class="h-2 flex-1 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                                        <div class="flex-1 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                                     @endif
                                 @endfor
                             </div>
@@ -138,7 +138,7 @@
                     @endif
 
                     {{-- Detalles --}}
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 dark:border-white/10 pt-4 mt-auto">
+                    <div class="grid grid-cols-2 pt-4 mt-auto border-t border-gray-100 gap-x-4 gap-y-3 dark:border-white/10">
                         <div>
                             <p class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Monto pagado</p>
                             <p class="mt-0.5 text-sm font-semibold text-gray-900 dark:text-white">${{ number_format($cuota->monto_cuota, 2) }}</p>
@@ -161,13 +161,13 @@
 
                     {{-- Descripción --}}
                     @if ($cuota->descripcion)
-                        <p class="mt-3 text-xs text-gray-400 dark:text-gray-500 italic truncate" title="{{ $cuota->descripcion }}">
+                        <p class="mt-3 text-xs italic text-gray-400 truncate dark:text-gray-500" title="{{ $cuota->descripcion }}">
                             "{{ $cuota->descripcion }}"
                         </p>
                     @endif
 
                     {{-- Footer --}}
-                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
+                    <div class="flex items-center justify-between pt-3 mt-4 border-t border-gray-100 dark:border-white/10">
                         <span class="font-mono text-[11px] text-gray-400 dark:text-gray-500">Venta #{{ $ventaId }}</span>
                         <a href="{{ $editUrl }}" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-gray-950/10 dark:ring-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                             <x-heroicon-o-pencil class="w-3.5 h-3.5" />
