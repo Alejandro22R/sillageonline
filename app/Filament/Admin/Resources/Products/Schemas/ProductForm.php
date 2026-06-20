@@ -100,11 +100,12 @@ TextInput::make('precio_divisa')
                     ->label('Descripción del Perfume'),
 
                 FileUpload::make('image')
-                    ->label('Imagen del Perfume')
-                    ->image()
-                    ->directory('products')
-                    ->disk('public')
-                    ->columnSpanFull(),
+    ->label('Imagen del Perfume')
+    ->image()
+    ->directory('products')
+    ->disk('public')
+    ->maxSize(5120) // <--- Añade esta línea (5120 KB = 5 MB)
+    ->columnSpanFull(),
 
                 Toggle::make('is_exclusive')
                     ->label('Colección Exclusiva')
