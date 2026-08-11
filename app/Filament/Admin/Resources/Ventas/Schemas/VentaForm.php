@@ -62,7 +62,7 @@ class VentaForm
                     ->default(auth()->id())
                     ->dehydrated()
                     ->required()
-                    ->columnSpan(12), // Ocupa el ancho completo antes del bloque de productos
+                    ->columnSpan(12),
 
                 // --- CUERPO: REPEATER (Mapea con DetalleVenta) ---
                 Repeater::make('detalles')
@@ -70,7 +70,6 @@ class VentaForm
                     ->relationship()
                     ->schema([
 
-                        // Fila 1 del Detalle: Selección del perfume y cantidad
                         Select::make('product_id')
                             ->label('Nombre del Perfume')
                             ->options(Product::query()->pluck('name', 'id'))
@@ -98,8 +97,7 @@ class VentaForm
                                 return $product ? "Disponibles: {$product->stock}" : null;
                             })
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
-                                $precio = (float) ($get('precio_unitario') ?? 0);
-                                $set('subtotal', (int) $state * $precio);
+                                self::calcularPreciosItem($set, $get, $get('product_id'));
                                 self::actualizarGranTotal($get, $set);
                             })
                             ->columnSpan(2),
@@ -116,7 +114,6 @@ class VentaForm
                             ->readonly()
                             ->columnSpan(3),
 
-                        // CORRECCIÓN: método_pago dentro del Repeater mapeado con el modelo DetalleVenta
                         CheckboxList::make('metodo_pago')
                             ->label('Métodos de Pago para este Producto')
                             ->options([
@@ -131,7 +128,6 @@ class VentaForm
                             ->required()
                             ->live()
                             ->afterStateUpdated(function (Get $get, Set $set) {
-                                // Recalcula los costos del perfume actual en base al método de pago seleccionado
                                 if (!empty($get('product_id'))) {
                                     self::calcularPreciosItem($set, $get, $get('product_id'));
                                 }
@@ -174,26 +170,23 @@ class VentaForm
                             ->content(fn (Get $get) => $get('primera_cuota') ?? 'Calculando...')
                             ->visible(fn (Get $get) => $get('pago_cuota') === 'Si')
                             ->columnSpan(4),
-                        Hidden::make('primera_cuota')
-                            ->dehydrated(true),
+                        Hidden::make('primera_cuota')->dehydrated(true),
 
                         Placeholder::make('segunda_cuota_vista')
                             ->label('2da Cuota')
                             ->content(fn (Get $get) => $get('segunda_cuota') ?? 'Calculando...')
                             ->visible(fn (Get $get) => $get('pago_cuota') === 'Si')
                             ->columnSpan(4),
-                        Hidden::make('segunda_cuota')
-                            ->dehydrated(true),
+                        Hidden::make('segunda_cuota')->dehydrated(true),
 
                         Placeholder::make('tercera_cuota_vista')
                             ->label('3ra Cuota')
                             ->content(fn (Get $get) => $get('tercera_cuota') ?? 'Calculando...')
                             ->visible(fn (Get $get) => $get('pago_cuota') === 'Si' && $get('numero_cuota') === '3 Cuotas')
                             ->columnSpan(4),
-                        Hidden::make('tercera_cuota')
-                            ->dehydrated(true),
+                        Hidden::make('tercera_cuota')->dehydrated(true),
                     ])
-                    ->columns(12) // Estructurado en rejilla de 12 para un diseño responsivo interno completo
+                    ->columns(12)
                     ->columnSpan(12)
                     ->addActionLabel('Añadir otro perfume')
                     ->live()
@@ -201,16 +194,38 @@ class VentaForm
                         self::actualizarGranTotal($get, $set);
                     }),
 
+                // --- NUEVO: Opción global de recargo de $5 por Pago Móvil (aparece fuera del repeater) ---
+                Select::make('recargo_pago_movil_global')
+                    ->label('¿Desea sumarle los $5 adicionales por pago en Bs (Pago Móvil) al total?')
+                    ->options([
+                        'No' => 'No',
+                        'Si' => 'Sí (+ $5)',
+                    ])
+                    ->default('No')
+                    ->required()
+                    ->visible(function (Get $get) {
+                        $detalles = $get('detalles') ?? [];
+                        // Revisa si al menos uno de los productos añadidos tiene 'Pago Movil' seleccionado
+                        foreach ($detalles as $item) {
+                            $metodos = $item['metodo_pago'] ?? [];
+                            if (is_array($metodos) && in_array('Pago Movil', $metodos)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })
+                    ->live()
+                    ->afterStateUpdated(function (Get $get, Set $set) {
+                        self::actualizarGranTotal($get, $set);
+                    })
+                    ->columnSpan(12),
+
                 TextInput::make('total_venta')
                     ->label('TOTAL DE LA VENTA')
                     ->numeric()
                     ->prefix('$')
                     ->readonly()
                     ->columnSpan(12)
-                    ->placeholder(function (Get $get) {
-                        $detalles = $get('detalles') ?? [];
-                        return (string) collect($detalles)->filter(fn ($item) => !empty($item['subtotal']))->sum('subtotal');
-                    })
                     ->extraInputAttributes([
                         'style' => 'font-size: 2.5rem; font-weight: bold; color: #EAB308; border: 2px solid #EAB308; background: transparent; height: 100px; text-align: center;'
                     ]),
@@ -222,7 +237,6 @@ class VentaForm
         $product = Product::find($productId);
 
         if ($product) {
-            // Evaluamos de forma local el método de pago elegido dentro de esta fila del repeater
             $metodosSeleccionados = $get("metodo_pago") ?? [];
 
             if (!is_array($metodosSeleccionados)) {
@@ -256,13 +270,22 @@ class VentaForm
         $detalles = $get('detalles') ?? [];
         $totalVenta = 0;
 
+        foreach ($detalles as $item) {
+            $totalVenta += (float) ($item['subtotal'] ?? 0);
+        }
+
+        // Si se seleccionó "Sí" en el recargo global, se le suman los $5 al total acumulado
+        $recargoGlobal = $get('recargo_pago_movil_global') ?? 'No';
+        if ($recargoGlobal === 'Si' && $totalVenta > 0) {
+            $totalVenta += 5.0;
+        }
+
         $fechaBaseInput = $get('fecha_venta') ?? now();
         $fechaBase = Carbon::parse($fechaBaseInput);
 
+        // Actualizamos las cuotas basándonos en el subtotal de cada ítem (o si prefieres repartir el recargo, esto mantiene la lógica proporcional por ítem o total)
         foreach ($detalles as $key => $item) {
             $subtotalItem = (float) ($item['subtotal'] ?? 0);
-            $totalVenta += $subtotalItem;
-
             $pagoCuota = $item['pago_cuota'] ?? 'No';
             $numeroCuotas = $item['numero_cuota'] ?? '';
 
@@ -273,14 +296,23 @@ class VentaForm
                 $fechaCuota2 = $fechaBase->copy()->addDays(15)->format('d-m-Y');
                 $fechaCuota3 = $fechaBase->copy()->addDays(30)->format('d-m-Y');
 
+                // Si quieres que el recargo de los $5 también afecte la cuota en caso de estar activo,
+                // podemos prorratearlo o sumárselo al total general de la cuota. Aquí usamos el subtotal del ítem:
+                $montoBaseCuota = $subtotalItem;
+
+                // (Opcional) Si deseas sumar proporcionalmente los $5 del recargo global al ítem cuando aplique:
+                if ($recargoGlobal === 'Si' && count($detalles) > 0) {
+                    $montoBaseCuota += (5.0 / count($detalles));
+                }
+
                 if ($numeroCuotas === '2 Cuotas') {
-                    $montoCuota = round($subtotalItem / 2, 2);
+                    $montoCuota = round($montoBaseCuota / 2, 2);
 
                     $set("{$path}primera_cuota", "\${$montoCuota} (Fecha: {$fechaCuota1})");
                     $set("{$path}segunda_cuota", "\${$montoCuota} (Fecha: {$fechaCuota2})");
                     $set("{$path}tercera_cuota", null);
                 } elseif ($numeroCuotas === '3 Cuotas') {
-                    $montoCuota = round($subtotalItem / 3, 2);
+                    $montoCuota = round($montoBaseCuota / 3, 2);
 
                     $set("{$path}primera_cuota", "\${$montoCuota} (Fecha: {$fechaCuota1})");
                     $set("{$path}segunda_cuota", "\${$montoCuota} (Fecha: {$fechaCuota2})");
