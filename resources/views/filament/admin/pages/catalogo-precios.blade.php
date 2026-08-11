@@ -15,7 +15,8 @@
     </div>
 
     <!-- Catálogo en Cuadrícula (Grid) -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.75rem;">
+    <!-- 2 columnas en móvil, 3 desde sm, 4 desde lg, 5 desde xl -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5 lg:gap-7">
         @forelse($products as $product)
             <!-- Tarjeta del Perfume -->
             <div class="group relative flex flex-col rounded-2xl overflow-hidden
@@ -44,21 +45,21 @@
                     @endif
 
                     <!-- Badge de stock/novedad opcional -->
-                    <div class="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
-                        <span class="text-[10px] font-semibold uppercase tracking-widest text-orange-400">Disponible</span>
+                    <div class="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
+                        <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-orange-400">Disponible</span>
                     </div>
                 </div>
 
                 <!-- Contenido Inferior -->
-                <div class="flex flex-col text-left p-4 gap-3">
+                <div class="flex flex-col text-left p-2.5 sm:p-4 gap-2 sm:gap-3">
 
                     <!-- Nombre del Perfume -->
-                    <h3 class="text-neutral-900 dark:text-white font-semibold text-base w-full truncate tracking-wide">
+                    <h3 class="text-neutral-900 dark:text-white font-semibold text-sm sm:text-base w-full truncate tracking-wide">
                         {{ $product->name }}
                     </h3>
 
                     <!-- Placa de Precio Naranja -->
-                    <div class="relative flex items-center justify-between rounded-lg px-3 py-2 overflow-hidden
+                    <div class="relative flex items-center justify-between rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 overflow-hidden
                                 bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500
                                 dark:from-orange-600 dark:via-orange-600 dark:to-amber-600
                                 shadow-inner ring-1 ring-orange-600/30 dark:ring-orange-400/20">
@@ -67,18 +68,18 @@
                         <div class="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-transparent pointer-events-none"></div>
 
                         <div class="relative flex flex-col leading-tight">
-                            <span class="text-[10px] font-medium uppercase tracking-wider text-orange-950/70">PRECIO EN DIVISAS</span>
-                            <span class="text-white font-bold text-sm drop-shadow-sm">
+                            <span class="text-[8px] sm:text-[10px] font-medium uppercase tracking-wider text-orange-950/70">USD</span>
+                            <span class="text-white font-bold text-xs sm:text-sm drop-shadow-sm">
                                 ${{ number_format($product->precio_divisa, 2) }}
                             </span>
                         </div>
 
-                        <div class="relative w-px h-8 bg-white/30"></div>
+                        <div class="relative w-px h-6 sm:h-8 bg-white/30"></div>
 
                         <div class="relative flex flex-col leading-tight items-end">
-                            <span class="text-[10px] font-medium uppercase tracking-wider text-orange-950/70">PRECIO EN BCV</span>
-                            <span class="text-white font-bold text-sm drop-shadow-sm">
-                                ${{ number_format($product->retail_price, 2, ',', '.') }}
+                            <span class="text-[8px] sm:text-[10px] font-medium uppercase tracking-wider text-orange-950/70">Bs</span>
+                            <span class="text-white font-bold text-xs sm:text-sm drop-shadow-sm">
+                                {{ number_format($product->retail_price, 2, ',', '.') }}
                             </span>
                         </div>
                     </div>
