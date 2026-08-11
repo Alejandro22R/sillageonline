@@ -15,10 +15,18 @@
     </div>
 
     <!-- Catálogo en Cuadrícula (Grid) -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.75rem;">
         @forelse($products as $product)
             <!-- Tarjeta del Perfume -->
-            <div class="group flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 ring-1 ring-neutral-200 dark:ring-neutral-800 shadow-sm hover:shadow-xl hover:shadow-neutral-900/10 dark:hover:shadow-black/40 transition-all duration-300 hover:-translate-y-1">
+            <div class="group relative flex flex-col rounded-2xl overflow-hidden
+                        bg-white dark:bg-neutral-900
+                        ring-1 ring-neutral-200 dark:ring-neutral-800
+                        shadow-sm hover:shadow-2xl hover:shadow-orange-500/10 dark:hover:shadow-orange-500/20
+                        transition-all duration-300 hover:-translate-y-1.5">
+
+                <!-- Línea superior de acento naranja, aparece al hover -->
+                <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600
+                            scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
 
                 <!-- Imagen -->
                 <div class="w-full aspect-[4/5] bg-neutral-950 overflow-hidden relative">
@@ -28,13 +36,17 @@
                             alt="{{ $product->name }}"
                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         >
-                        <!-- Sombreado inferior sutil para separar la imagen del contenido -->
-                        <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+                        <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
                     @else
                         <div class="w-full h-full flex items-center justify-center">
                             <x-heroicon-o-photo class="w-16 h-16 text-neutral-700" />
                         </div>
                     @endif
+
+                    <!-- Badge de stock/novedad opcional -->
+                    <div class="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
+                        <span class="text-[10px] font-semibold uppercase tracking-widest text-orange-400">Disponible</span>
+                    </div>
                 </div>
 
                 <!-- Contenido Inferior -->
@@ -45,27 +57,27 @@
                         {{ $product->name }}
                     </h3>
 
-                    <!-- Placa de Precio (dorada, adaptable a claro/oscuro) -->
+                    <!-- Placa de Precio Naranja -->
                     <div class="relative flex items-center justify-between rounded-lg px-3 py-2 overflow-hidden
-                                bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600
-                                dark:from-amber-600 dark:via-yellow-600 dark:to-amber-700
-                                shadow-inner ring-1 ring-amber-600/30 dark:ring-amber-400/20">
+                                bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500
+                                dark:from-orange-600 dark:via-orange-600 dark:to-amber-600
+                                shadow-inner ring-1 ring-orange-600/30 dark:ring-orange-400/20">
 
                         <!-- Brillo diagonal sutil -->
                         <div class="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-transparent pointer-events-none"></div>
 
                         <div class="relative flex flex-col leading-tight">
-                            <span class="text-[10px] font-medium uppercase tracking-wider text-amber-950/70">PRECIO DIVISAS</span>
-                            <span class="text-neutral-950 font-bold text-sm">
+                            <span class="text-[10px] font-medium uppercase tracking-wider text-orange-950/70">PRECIO EN DIVISAS</span>
+                            <span class="text-white font-bold text-sm drop-shadow-sm">
                                 ${{ number_format($product->precio_divisa, 2) }}
                             </span>
                         </div>
 
-                        <div class="relative w-px h-8 bg-neutral-950/20"></div>
+                        <div class="relative w-px h-8 bg-white/30"></div>
 
                         <div class="relative flex flex-col leading-tight items-end">
-                            <span class="text-[10px] font-medium uppercase tracking-wider text-amber-950/70">PRECIO BCV</span>
-                            <span class="text-neutral-950 font-bold text-sm">
+                            <span class="text-[10px] font-medium uppercase tracking-wider text-orange-950/70">PRECIO EN BCV</span>
+                            <span class="text-white font-bold text-sm drop-shadow-sm">
                                 ${{ number_format($product->retail_price, 2, ',', '.') }}
                             </span>
                         </div>
