@@ -17,6 +17,10 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Vite;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -25,6 +29,11 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            // Carga tu app.js compilado (necesario para @simplewebauthn/browser: startRegistration, startAuthentication)
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => Vite::withEntryPoints(['resources/js/app.js'])->toHtml(),
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])

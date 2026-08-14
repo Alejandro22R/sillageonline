@@ -95,4 +95,15 @@ new #[Layout('layouts.guest')] class extends Component
             </button>
         </div>
     </form>
+
+    <!-- Separador -->
+    <div style="position: relative; display: flex; align-items: center; justify-content: center; text-align: center; margin-top: 1.5rem; margin-bottom: 1rem;">
+        <div style="position: absolute; border-top: 1px solid #333; width: 100%;"></div>
+        <span style="background-color: #111; padding: 0 0.75rem; font-size: 0.75rem; color: #888; position: relative; z-index: 10; letter-spacing: 0.1em; text-transform: uppercase;">O ingresa con</span>
+    </div>
+
+    <!-- Passkey / Huella dactilar (Spatie Laravel Passkeys) -->
+    <div style="margin-top: 0.5rem; text-align: center;">
+        <x-authenticate-passkey />
+    </div>
 </div>

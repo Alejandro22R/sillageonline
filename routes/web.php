@@ -6,6 +6,8 @@ use App\Livewire\Admin\Giveaway;
 
 Route::get('/', Catalog::class);
 
+Route::passkeys();
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
