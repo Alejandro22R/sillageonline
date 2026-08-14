@@ -111,7 +111,7 @@
                 margin: 0 0 0.1rem 0 !important;
             }
         </style>
-        @webauthnScripts
+@vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
         <div class="main-container">
