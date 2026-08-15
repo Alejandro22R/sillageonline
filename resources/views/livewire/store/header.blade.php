@@ -4,6 +4,14 @@
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         [x-cloak] { display: none !important; }
 
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-card-in {
+            animation: cardFadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
         .search-dropdown {
             position: fixed;
             top: 84px;

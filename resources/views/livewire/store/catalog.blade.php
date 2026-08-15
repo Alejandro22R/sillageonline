@@ -57,7 +57,15 @@
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
                                 <div class="h-[320px] w-full overflow-hidden relative bg-[#111]">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                    @endif
+                                    @if($product->stock <= 0)
+                                        <div class="absolute inset-0 bg-black/55 z-20"></div>
+                                        <div class="absolute top-0 right-0 w-28 h-28 overflow-hidden z-30 pointer-events-none">
+                                            <div class="absolute top-[18px] right-[-34px] w-[170px] rotate-45 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest text-center py-1 shadow-lg shadow-black/50 border-y border-white/20">
+                                                Agotado
+                                            </div>
+                                        </div>
                                     @endif
                                     <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-md text-[#D4AF37] text-[10px] font-bold px-3 py-1 uppercase tracking-widest border border-[#D4AF37]/30 rounded shadow-lg">
                                         Exclusiva
@@ -73,9 +81,15 @@
                                 </a>
                                 <p class="text-xl font-light text-[#D4AF37] mt-2 mb-6">${{ number_format($product->retail_price, 2) }}</p>
 
-                                <button wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })" class="mt-auto w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300">
-                                    Añadir al carrito
-                                </button>
+                                @if($product->stock > 0)
+                                    <button wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })" class="mt-auto w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300">
+                                        Añadir al carrito
+                                    </button>
+                                @else
+                                    <button type="button" disabled class="mt-auto w-full bg-transparent border border-gray-700 text-gray-600 py-3 text-[10px] font-black uppercase tracking-[0.2em] cursor-not-allowed">
+                                        Agotado
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -106,7 +120,15 @@
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
                                 <div class="h-[320px] w-full overflow-hidden relative bg-[#111]">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                    @endif
+                                    @if($product->stock <= 0)
+                                        <div class="absolute inset-0 bg-black/55 z-20"></div>
+                                        <div class="absolute top-0 right-0 w-28 h-28 overflow-hidden z-30 pointer-events-none">
+                                            <div class="absolute top-[18px] right-[-34px] w-[170px] rotate-45 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest text-center py-1 shadow-lg shadow-black/50 border-y border-white/20">
+                                                Agotado
+                                            </div>
+                                        </div>
                                     @endif
                                     <div class="absolute top-4 left-4 z-20 bg-red-600 text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest rounded shadow-[0_0_15px_rgba(220,38,38,0.5)]">
                                         Oferta
@@ -130,9 +152,15 @@
                                     </span>
                                 </div>
 
-                                <button wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })" class="mt-auto w-full bg-transparent border border-red-600/50 text-red-500 hover:bg-red-600 hover:text-white py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300">
-                                    Aprovechar Oferta
-                                </button>
+                                @if($product->stock > 0)
+                                    <button wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })" class="mt-auto w-full bg-transparent border border-red-600/50 text-red-500 hover:bg-red-600 hover:text-white py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300">
+                                        Aprovechar Oferta
+                                    </button>
+                                @else
+                                    <button type="button" disabled class="mt-auto w-full bg-transparent border border-gray-700 text-gray-600 py-3 text-[10px] font-black uppercase tracking-[0.2em] cursor-not-allowed">
+                                        Agotado
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -141,19 +169,56 @@
             @endif
 
             <section>
-                <div class="mb-12 text-center">
+                <div class="mb-8 text-center">
                     <p class="text-[#D4AF37] tracking-[0.3em] uppercase text-xs mb-2 font-bold">Descubre Todas Nuestras Fragancias</p>
                     <h2 class="text-3xl md:text-5xl font-black uppercase tracking-widest text-white">Catálogo <span class="font-light">Completo</span></h2>
                 </div>
 
-                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8">
+                <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-12">
+                    <span class="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 mr-1 sm:mr-2">Ordenar por</span>
+
+                    <button
+                        wire:click="setSort('name')"
+                        wire:loading.attr="disabled"
+                        class="px-4 sm:px-5 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 {{ $sortBy === 'name' ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-transparent text-gray-400 border-white/10 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]' }}"
+                    >
+                        Nombre A-Z
+                    </button>
+
+                    <button
+                        wire:click="setSort('marca')"
+                        wire:loading.attr="disabled"
+                        class="px-4 sm:px-5 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 {{ $sortBy === 'marca' ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-transparent text-gray-400 border-white/10 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]' }}"
+                    >
+                        Marca
+                    </button>
+                </div>
+
+                <div
+                    wire:loading.class="opacity-30 scale-[0.98] pointer-events-none"
+                    wire:target="setSort"
+                    class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 transition-all duration-300 ease-out"
+                >
                     @foreach($products as $product)
-                        <div class="group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2 h-full">
+                        <div
+                            wire:key="product-{{ $sortBy }}-{{ $product->id }}"
+                            class="animate-card-in group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2 h-full"
+                            style="animation-delay: {{ min($loop->index * 40, 400) }}ms"
+                        >
 
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
                                 <div class="h-[200px] sm:h-[320px] w-full overflow-hidden relative bg-[#111]">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                    @endif
+
+                                    @if($product->stock <= 0)
+                                        <div class="absolute inset-0 bg-black/55 z-20"></div>
+                                        <div class="absolute top-0 right-0 w-20 sm:w-28 h-20 sm:h-28 overflow-hidden z-30 pointer-events-none">
+                                            <div class="absolute top-[12px] sm:top-[18px] right-[-30px] sm:right-[-34px] w-[140px] sm:w-[170px] rotate-45 bg-red-600 text-white text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-center py-0.5 sm:py-1 shadow-lg shadow-black/50 border-y border-white/20">
+                                                Agotado
+                                            </div>
+                                        </div>
                                     @endif
 
                                     @if($product->is_offer)
@@ -188,9 +253,15 @@
                                     </p>
                                 @endif
 
-                                <button wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })" class="mt-auto w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-2 sm:py-3 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300">
-                                    Añadir
-                                </button>
+                                @if($product->stock > 0)
+                                    <button wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })" class="mt-auto w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-2 sm:py-3 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all duration-300">
+                                        Añadir
+                                    </button>
+                                @else
+                                    <button type="button" disabled class="mt-auto w-full bg-transparent border border-gray-700 text-gray-600 py-2 sm:py-3 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] cursor-not-allowed">
+                                        Agotado
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @endforeach
