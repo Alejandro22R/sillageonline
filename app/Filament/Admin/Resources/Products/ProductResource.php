@@ -6,6 +6,8 @@ use App\Filament\Admin\Resources\Products\Pages\CreateProduct;
 use App\Filament\Admin\Resources\Products\Pages\EditProduct;
 use App\Filament\Admin\Resources\Products\Pages\ListProducts;
 use App\Filament\Admin\Resources\Products\Pages\ViewProduct;
+use App\Filament\Admin\Resources\Products\RelationManagers\ChordsRelationManager;
+use App\Filament\Admin\Resources\Products\RelationManagers\NotesRelationManager;
 use App\Filament\Admin\Resources\Products\Schemas\ProductForm;
 use App\Filament\Admin\Resources\Products\Schemas\ProductInfolist;
 use App\Filament\Admin\Resources\Products\Tables\ProductsTable;
@@ -42,7 +44,8 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            NotesRelationManager::class,
+            ChordsRelationManager::class,
         ];
     }
 

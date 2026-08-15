@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Store\Catalog;
 use App\Livewire\Admin\Giveaway;
+use App\Livewire\Store\ProductDetail;
+
+
+Route::get('/store/{slug}', ProductDetail::class)->name('store.product');
 
 Route::get('/', Catalog::class);
 
