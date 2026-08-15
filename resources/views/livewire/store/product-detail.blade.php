@@ -15,6 +15,27 @@
             <h1 class="text-3xl font-bold text-[#D4AF37] mb-2">{{ $product->name }}</h1>
             <p class="text-gray-400 mb-6 uppercase tracking-widest text-xs">{{ $product->marca_perfume ?? '' }}</p>
 
+
+                        {{-- Gráfico de Acordes --}}
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
+                    Acordes Principales
+                </h2>
+
+                <div class="flex flex-col gap-1">
+                    @foreach ($chords as $chord)
+                        <div
+                            class="h-9 flex items-center rounded-r-full shadow-md shadow-black/40 transition-all duration-700"
+                            style="width: {{ max($chord->pivot->intensity, 30) }}%; min-width: 140px; background-color: {{ $chord->color }};"
+                        >
+                            <span class="w-full text-center text-white text-xs font-bold uppercase tracking-wide px-4 truncate">
+                                {{ $chord->name }}
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
             {{-- Pirámide Olfativa --}}
             <div class="mb-8">
                 <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
@@ -37,25 +58,6 @@
                 </div>
             </div>
 
-            {{-- Gráfico de Acordes --}}
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
-                    Acordes Principales
-                </h2>
-
-                <div class="flex flex-col gap-1">
-                    @foreach ($chords as $chord)
-                        <div
-                            class="h-9 flex items-center rounded-r-full shadow-md shadow-black/40 transition-all duration-700"
-                            style="width: {{ max($chord->pivot->intensity, 30) }}%; min-width: 140px; background-color: {{ $chord->color }};"
-                        >
-                            <span class="w-full text-center text-white text-xs font-bold uppercase tracking-wide px-4 truncate">
-                                {{ $chord->name }}
-                            </span>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
 
             {{-- Precio y añadir al carrito --}}
             <div class="border-t border-white/10 pt-6">
