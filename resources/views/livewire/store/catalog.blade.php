@@ -70,12 +70,12 @@
                                     <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-md text-[#D4AF37] text-[10px] font-bold px-3 py-1 uppercase tracking-widest border border-[#D4AF37]/30 rounded shadow-lg">
                                         Exclusiva
                                     </div>
-                                    <div class="absolute bottom-4 right-4 text-gray-400 text-[10px] uppercase tracking-widest font-bold drop-shadow-md">
-                                        {{ $product->brand ?? 'Sillage' }}
-                                    </div>
                                 </div>
                             </a>
                             <div class="p-6 flex flex-col flex-1 text-center">
+                                <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#D4AF37]/90 mb-1 truncate">
+                                    {{ $product->marca_perfume ?? 'Sillage' }}
+                                </p>
                                 <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="hover:text-[#D4AF37] transition-colors">
                                     <h3 class="text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                 </a>
@@ -133,12 +133,12 @@
                                     <div class="absolute top-4 left-4 z-20 bg-red-600 text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest rounded shadow-[0_0_15px_rgba(220,38,38,0.5)]">
                                         Oferta
                                     </div>
-                                    <div class="absolute bottom-4 right-4 text-gray-400 text-[10px] uppercase tracking-widest font-bold drop-shadow-md">
-                                        {{ $product->brand ?? 'Sillage' }}
-                                    </div>
                                 </div>
                             </a>
                             <div class="p-6 flex flex-col flex-1 text-center">
+                                <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#D4AF37]/90 mb-1 truncate">
+                                    {{ $product->marca_perfume ?? 'Sillage' }}
+                                </p>
                                 <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="hover:text-red-500 transition-colors">
                                     <h3 class="text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                 </a>
@@ -226,14 +226,13 @@
                                     @elseif($product->is_exclusive)
                                         <div class="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black/80 backdrop-blur-sm text-[#D4AF37] text-[8px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 uppercase tracking-widest border border-[#D4AF37]/30 rounded shadow-lg">Exclusiva</div>
                                     @endif
-
-                                    <div class="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 text-gray-400 text-[8px] sm:text-[10px] uppercase tracking-widest font-bold drop-shadow-md">
-                                        {{ $product->marca_perfume ?? 'Sillage' }}
-                                    </div>
                                 </div>
                             </a>
 
                             <div class="p-3 sm:p-6 flex flex-col flex-1 text-center">
+                                <p class="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#D4AF37]/90 mb-0.5 sm:mb-1 truncate">
+                                    {{ $product->marca_perfume ?? 'Sillage' }}
+                                </p>
                                 <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="hover:text-[#D4AF37] transition-colors">
                                     <h3 class="text-sm sm:text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                 </a>

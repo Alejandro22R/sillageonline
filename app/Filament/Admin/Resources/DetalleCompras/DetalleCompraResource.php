@@ -15,12 +15,23 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class DetalleCompraResource extends Resource
 {
     protected static ?string $model = DetalleCompra::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static ?string $navigationLabel = 'Detalle de Compras';
+
+    protected static ?string $modelLabel = 'Detalle de Compra';
+
+    protected static ?string $pluralModelLabel = 'Detalles de Compra';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Compras';
+
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $recordTitleAttribute = 'id';
 

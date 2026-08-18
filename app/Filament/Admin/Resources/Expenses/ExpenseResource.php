@@ -15,11 +15,12 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ExpenseResource extends Resource
 {
     protected static ?string $model = Expense::class;
-    
+
 
     // Cambiamos el ícono a un fajo de billetes para representar finanzas
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
@@ -28,6 +29,10 @@ class ExpenseResource extends Resource
     protected static ?string $navigationLabel = 'Gastos';
     protected static ?string $pluralLabel = 'Gastos';
     protected static ?string $modelLabel = 'Gasto';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Finanzas';
+
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $recordTitleAttribute = 'description';
 

@@ -7,6 +7,7 @@ use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -38,6 +39,20 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->viteTheme('resources/css/filament/admin/theme.css')
+            // Orden y agrupación lógica del menú lateral: primero el catálogo de
+            // productos, luego el flujo de ventas y compras, después finanzas
+            // y por último la administración de la cuenta/usuarios.
+            // Nota: los íconos van en cada recurso/página (item), no aquí en el
+            // grupo — Filament no permite icono en el grupo y en sus items a la vez.
+            ->navigationGroups([
+                NavigationGroup::make('Catálogo'),
+                NavigationGroup::make('Ventas'),
+                NavigationGroup::make('Compras'),
+                NavigationGroup::make('Finanzas')
+                    ->collapsed(),
+                NavigationGroup::make('Administración')
+                    ->collapsed(),
+            ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
             ->favicon(asset('img/sillage.png'))

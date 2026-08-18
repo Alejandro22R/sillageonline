@@ -15,12 +15,23 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ProveedorResource extends Resource
 {
     protected static ?string $model = Proveedor::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
+
+    protected static ?string $navigationLabel = 'Proveedores';
+
+    protected static ?string $modelLabel = 'Proveedor';
+
+    protected static ?string $pluralModelLabel = 'Proveedores';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Compras';
+
+    protected static ?int $navigationSort = 30;
 
     protected static ?string $recordTitleAttribute = 'nombre';
 
