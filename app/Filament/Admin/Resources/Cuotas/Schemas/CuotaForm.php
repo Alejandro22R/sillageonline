@@ -2,12 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Cuotas\Schemas;
 
+use App\Models\Venta;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use App\Models\DetalleVenta;
 
 class CuotaForm
 {
@@ -15,93 +15,84 @@ class CuotaForm
     {
         return $schema
             ->components([
-                Select::make('detalle_venta_id')
-    ->label('Venta (Cliente - Producto)')
-    ->relationship('detalleVenta', 'id')
-    ->getOptionLabelFromRecordUsing(fn ($record) =>
-        ($record->venta->cliente->nombre ?? 'N/A') . ' - ' . ($record->producto->name ?? 'N/A')
-    )
-    ->searchable()
-    ->preload()
-    ->live()
-    // NUEVO: Esto permite buscar por nombre de cliente o nombre de producto
-    ->getSearchResultsUsing(function (string $search): array {
-        return \App\Models\DetalleVenta::query()
-            ->whereHas('venta.cliente', fn ($query) => $query->where('nombre', 'like', "%{$search}%"))
-            ->orWhereHas('producto', fn ($query) => $query->where('name', 'like', "%{$search}%"))
-            ->get()
-            ->mapWithKeys(fn ($record) => [
-                $record->id => ($record->venta->cliente->nombre ?? 'N/A') . ' - ' . ($record->producto->name ?? 'N/A')
-            ])
-            ->toArray();
-    })
-    ->afterStateUpdated(function ($state, $set) {
-        self::cargarDatos($state, $set);
-    })
-    ->afterStateHydrated(function ($state, $set) {
-        self::cargarDatos($state, $set);
-    })
-    ->required(),
-
-                TextInput::make('precio_perfume')
-                    ->label('Precio del Producto')
-                    ->disabled()
-                    ->dehydrated()
-                    ->prefix('$'),
-
-                TextInput::make('numero_cuota')
-                    ->label('Cuotas totales acordadas')
-                    ->disabled()
-                    ->dehydrated(),
-
-                Select::make('cuota_pagada')
-                    ->label('¿Qué número de cuota estás pagando?')
-                    ->options(function ($get) {
-                        $total = (int) $get('numero_cuota');
-                        if ($total <= 0) return [];
-                        return collect(range(1, $total))->mapWithKeys(fn ($i) => [$i => "Cuota {$i}"])->toArray();
+                Select::make('venta_id')
+                    ->label('Venta')
+                    ->options(function () {
+                        return static::ventasDisponibles()
+                            ->get()
+                            ->mapWithKeys(fn (Venta $venta) => [
+                                $venta->id => static::etiquetaVenta($venta),
+                            ]);
                     })
-                    ->required()
-                    ->live(),
+                    ->getSearchResultsUsing(function (string $search) {
+                        return static::ventasDisponibles()
+                            ->whereHas('cliente', fn ($q) => $q->where('nombre', 'like', "%{$search}%")
+                                ->orWhere('apellido', 'like', "%{$search}%")
+                                ->orWhere('cedula', 'like', "%{$search}%"))
+                            ->get()
+                            ->mapWithKeys(fn (Venta $venta) => [
+                                $venta->id => static::etiquetaVenta($venta),
+                            ]);
+                    })
+                    ->getOptionLabelUsing(fn ($value) => ($venta = Venta::find($value)) ? static::etiquetaVenta($venta) : null)
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->required(),
+
+                TextInput::make('monto_cuota')
+                    ->label('Monto del abono')
+                    ->numeric()
+                    ->minValue(0.01)
+                    ->prefix('$')
+                    ->helperText(function (Get $get) {
+                        $venta = Venta::find($get('venta_id'));
+
+                        return $venta
+                            ? 'Saldo pendiente de esta venta: $' . number_format($venta->saldo_pendiente, 2)
+                            : null;
+                    })
+                    ->required(),
 
                 Select::make('metodo_pago')
+                    ->label('Método de Pago')
                     ->options([
                         'Pago Movil' => 'Pago Movil', 'USDT' => 'USDT', 'Zinli' => 'Zinli',
                         'Wally' => 'Wally', 'Cash' => 'Cash', 'Zelle' => 'Zelle',
                     ])
-                    ->label('Método de Pago')
-                    ->required(),
-
-                TextInput::make('monto_cuota')
-                    ->label('Monto Pagado')
-                    ->numeric()
-                    ->prefix('$')
-                    ->required(),
-
-                TextInput::make('descripcion')
-                    ->label('Descripción/Detalle')
-                    ->placeholder('Ej: Pago de cuota')
                     ->required(),
 
                 DatePicker::make('fecha_pago')
                     ->label('Fecha del Pago')
-                    ->default(now()),
-
-                Select::make('estado')
-                    ->label('Estado')
-                    ->options(['pendiente' => 'Pendiente', 'pagado' => 'Pagado'])
-                    ->default('pagado')
+                    ->default(now())
                     ->required(),
+
+                TextInput::make('descripcion')
+                    ->label('Descripción/Detalle')
+                    ->placeholder('Ej: Segundo abono en efectivo'),
             ]);
     }
 
-    // Método auxiliar para no duplicar código
-    protected static function cargarDatos($state, $set)
+    /**
+     * Un vendedor solo puede registrar abonos contra sus propias ventas.
+     */
+    protected static function ventasDisponibles()
     {
-        $detalle = DetalleVenta::find($state);
-        if ($detalle) {
-            $set('precio_perfume', $detalle->precio_unitario ?? 0);
-            $set('numero_cuota', $detalle->numero_cuota ?? 0);
-        }
+        return Venta::query()
+            ->with('cliente')
+            ->where('user_id', auth()->id())
+            ->latest('fecha_venta');
+    }
+
+    protected static function etiquetaVenta(Venta $venta): string
+    {
+        $cliente = $venta->cliente ? "{$venta->cliente->nombre} {$venta->cliente->apellido}" : 'Sin cliente';
+
+        return sprintf(
+            'Venta #%s — %s — $%s',
+            str_pad((string) $venta->id, 6, '0', STR_PAD_LEFT),
+            $cliente,
+            number_format((float) $venta->total_venta, 2),
+        );
     }
 }

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL; // <-- Añadimos esto
+use App\Models\Cuota;
+use App\Observers\CuotaObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,5 +26,9 @@ class AppServiceProvider extends ServiceProvider
         if (request()->header('x-forwarded-proto') === 'https') {
             URL::forceScheme('https');
         }
+
+        // Cada vez que se registra/borra un abono, recalcula si la venta
+        // ya quedó pagada por completo.
+        Cuota::observe(CuotaObserver::class);
     }
 }

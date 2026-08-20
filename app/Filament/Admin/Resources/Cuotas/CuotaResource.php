@@ -6,13 +6,10 @@ use App\Filament\Admin\Resources\Cuotas\Pages\CreateCuota;
 use App\Filament\Admin\Resources\Cuotas\Pages\EditCuota;
 use App\Filament\Admin\Resources\Cuotas\Pages\ListCuotas;
 use App\Filament\Admin\Resources\Cuotas\Schemas\CuotaForm;
-use App\Filament\Admin\Resources\Cuotas\Tables\CuotasTable;
 use App\Models\Cuota;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 use UnitEnum;
 
 class CuotaResource extends Resource
@@ -29,14 +26,18 @@ class CuotaResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Cuota';
 
+    protected static ?string $modelLabel = 'Abono';
+
+    protected static ?string $pluralModelLabel = 'Cuotas';
+
+    /**
+     * El índice ("Cuotas") no usa el Table Builder: es una vista propia de
+     * tarjetas (ver Pages\ListCuotas). form() sigue existiendo para el
+     * fallback de Create/Edit de un abono suelto.
+     */
     public static function form(Schema $schema): Schema
     {
         return CuotaForm::configure($schema);
-    }
-
-    public static function table(Table $table): Table
-    {
-        return CuotasTable::configure($table);
     }
 
     public static function getRelations(): array

@@ -3,14 +3,11 @@
 namespace App\Filament\Admin\Resources\Ventas\Schemas;
 
 use App\Models\Product;
-use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -134,57 +131,6 @@ class VentaForm
                                 self::actualizarGranTotal($get, $set);
                             })
                             ->columnSpan(12),
-
-                        // Fila 3 del Detalle: Control de Crédito por Perfume
-                        Select::make('pago_cuota')
-                            ->label('¿Es pago a cuotas / crédito?')
-                            ->options([
-                                'No' => 'No',
-                                'Si' => 'Sí',
-                            ])
-                            ->default('No')
-                            ->required()
-                            ->live()
-                            ->afterStateUpdated(function (Get $get, Set $set) {
-                                self::actualizarGranTotal($get, $set);
-                            })
-                            ->columnSpan(6),
-
-                        Select::make('numero_cuota')
-                            ->label('Cantidad de Cuotas')
-                            ->options([
-                                '2 Cuotas' => '2 Cuotas',
-                                '3 Cuotas' => '3 Cuotas',
-                            ])
-                            ->required(fn (Get $get) => $get('pago_cuota') === 'Si')
-                            ->visible(fn (Get $get) => $get('pago_cuota') === 'Si')
-                            ->live()
-                            ->afterStateUpdated(function (Get $get, Set $set) {
-                                self::actualizarGranTotal($get, $set);
-                            })
-                            ->columnSpan(6),
-
-                        // --- CAMPOS DE CUOTAS PERSISTENTES ---
-                        Placeholder::make('primera_cuota_vista')
-                            ->label('1ra Cuota')
-                            ->content(fn (Get $get) => $get('primera_cuota') ?? 'Calculando...')
-                            ->visible(fn (Get $get) => $get('pago_cuota') === 'Si')
-                            ->columnSpan(4),
-                        Hidden::make('primera_cuota')->dehydrated(true),
-
-                        Placeholder::make('segunda_cuota_vista')
-                            ->label('2da Cuota')
-                            ->content(fn (Get $get) => $get('segunda_cuota') ?? 'Calculando...')
-                            ->visible(fn (Get $get) => $get('pago_cuota') === 'Si')
-                            ->columnSpan(4),
-                        Hidden::make('segunda_cuota')->dehydrated(true),
-
-                        Placeholder::make('tercera_cuota_vista')
-                            ->label('3ra Cuota')
-                            ->content(fn (Get $get) => $get('tercera_cuota') ?? 'Calculando...')
-                            ->visible(fn (Get $get) => $get('pago_cuota') === 'Si' && $get('numero_cuota') === '3 Cuotas')
-                            ->columnSpan(4),
-                        Hidden::make('tercera_cuota')->dehydrated(true),
                     ])
                     ->columns(12)
                     ->columnSpan(12)
@@ -280,58 +226,6 @@ class VentaForm
             $totalVenta += 5.0;
         }
 
-        $fechaBaseInput = $get('fecha_venta') ?? now();
-        $fechaBase = Carbon::parse($fechaBaseInput);
-
-        // Actualizamos las cuotas basándonos en el subtotal de cada ítem (o si prefieres repartir el recargo, esto mantiene la lógica proporcional por ítem o total)
-        foreach ($detalles as $key => $item) {
-            $subtotalItem = (float) ($item['subtotal'] ?? 0);
-            $pagoCuota = $item['pago_cuota'] ?? 'No';
-            $numeroCuotas = $item['numero_cuota'] ?? '';
-
-            $path = "detalles.{$key}.";
-
-            if ($pagoCuota === 'Si' && $subtotalItem > 0) {
-                $fechaCuota1 = $fechaBase->format('d-m-Y');
-                $fechaCuota2 = $fechaBase->copy()->addDays(15)->format('d-m-Y');
-                $fechaCuota3 = $fechaBase->copy()->addDays(30)->format('d-m-Y');
-
-                // Si quieres que el recargo de los $5 también afecte la cuota en caso de estar activo,
-                // podemos prorratearlo o sumárselo al total general de la cuota. Aquí usamos el subtotal del ítem:
-                $montoBaseCuota = $subtotalItem;
-
-                // (Opcional) Si deseas sumar proporcionalmente los $5 del recargo global al ítem cuando aplique:
-                if ($recargoGlobal === 'Si' && count($detalles) > 0) {
-                    $montoBaseCuota += (5.0 / count($detalles));
-                }
-
-                if ($numeroCuotas === '2 Cuotas') {
-                    $montoCuota = round($montoBaseCuota / 2, 2);
-
-                    $set("{$path}primera_cuota", "\${$montoCuota} (Fecha: {$fechaCuota1})");
-                    $set("{$path}segunda_cuota", "\${$montoCuota} (Fecha: {$fechaCuota2})");
-                    $set("{$path}tercera_cuota", null);
-                } elseif ($numeroCuotas === '3 Cuotas') {
-                    $montoCuota = round($montoBaseCuota / 3, 2);
-
-                    $set("{$path}primera_cuota", "\${$montoCuota} (Fecha: {$fechaCuota1})");
-                    $set("{$path}segunda_cuota", "\${$montoCuota} (Fecha: {$fechaCuota2})");
-                    $set("{$path}tercera_cuota", "\${$montoCuota} (Fecha: {$fechaCuota3})");
-                } else {
-                    self::limpiarCuotasItem($set, $path);
-                }
-            } else {
-                self::limpiarCuotasItem($set, $path);
-            }
-        }
-
         $set('total_venta', $totalVenta);
-    }
-
-    private static function limpiarCuotasItem(Set $set, string $path): void
-    {
-        $set("{$path}primera_cuota", null);
-        $set("{$path}segunda_cuota", null);
-        $set("{$path}tercera_cuota", null);
     }
 }

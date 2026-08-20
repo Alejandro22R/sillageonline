@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany; // <--- ESTA ES LA QUE FALTA
 
 class DetalleVenta extends Model
 {
@@ -13,11 +12,6 @@ class DetalleVenta extends Model
         'product_id',
         'metodo_pago',
         'cantidad',
-        'pago_cuota',
-        'numero_cuota',
-        'primera_cuota',
-        'segunda_cuota',
-        'tercera_cuota',
         'precio_unitario',
         'subtotal',
     ];
@@ -34,10 +28,5 @@ class DetalleVenta extends Model
     public function producto(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
-    }
-
-    public function cuotas(): HasMany
-    {
-        return $this->hasMany(Cuota::class, 'detalle_venta_id');
     }
 }

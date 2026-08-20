@@ -31,20 +31,6 @@ class DetalleVentaInfolist
                         }
                         return $state;
                     }),
-                TextEntry::make('pago_cuota')
-                    ->label('Pago por Cuota'),
-                textEntry::make('numero_cuota')
-                    ->label('Número de Cuotas')
-                    ->placeholder('-'),
-                TextEntry::make('primera_cuota')
-                    ->label('Primera Cuota')
-                      ->placeholder('-'),
-                TextEntry::make('segunda_cuota')
-                    ->label('Segunda Cuota')
-                     ->placeholder('-'),
-                TextEntry::make('tercera_cuota')
-                    ->label('Tercera Cuota')
-                     ->placeholder('-'),
                 TextEntry::make('precio_unitario')
                     ->money('USD'),
                 TextEntry::make('subtotal')
