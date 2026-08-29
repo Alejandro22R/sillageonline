@@ -7,8 +7,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DetachAction;
 use Filament\Actions\DetachBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -22,24 +20,17 @@ class ChordsRelationManager extends RelationManager
 
     protected static ?string $title = 'Acordes';
 
+    /**
+     * Este formulario lo usa el botón "Editar" de la tabla: el registro que
+     * llega ahí ya es el propio Chord adjunto (no el Product), así que no
+     * tiene sentido volver a elegir "qué acorde es" con un Select de
+     * relación — eso ya se resolvió al adjuntarlo. Lo único editable por
+     * cada adjunto es la intensidad de ese acorde en este producto.
+     */
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Select::make('name')
-                    ->label('Acorde')
-                    ->relationship('chords', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->label('Nombre')
-                            ->required(),
-                        ColorPicker::make('color')
-                            ->label('Color')
-                            ->required(),
-                    ]),
-
                 TextInput::make('intensity')
                     ->label('Intensidad (%)')
                     ->numeric()

@@ -6,8 +6,6 @@ use Filament\Actions\AttachAction;
 use Filament\Actions\DetachAction;
 use Filament\Actions\DetachBulkAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -19,29 +17,16 @@ class NotesRelationManager extends RelationManager
 
     protected static ?string $title = 'Notas Olfativas';
 
+    /**
+     * No hay EditAction en la tabla (solo Attach/Detach), así que este
+     * formulario no llega a usarse — pero si algún día se agrega, no debe
+     * repetir el mismo error que tenía ChordsRelationManager: el registro
+     * que llegaría aquí ya es la propia Note adjunta, no el Product, y
+     * "notes" no es una relación de Note.
+     */
     public function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Select::make('name')
-                    ->label('Nota')
-                    ->relationship('notes', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->label('Nombre')
-                            ->required(),
-                        Select::make('type')
-                            ->label('Tipo')
-                            ->options([
-                                'top'   => 'Salida',
-                                'heart' => 'Corazón',
-                                'base'  => 'Fondo',
-                            ])
-                            ->required(),
-                    ]),
-            ]);
+        return $schema->components([]);
     }
 
     public function table(Table $table): Table
