@@ -56,7 +56,7 @@ class ChordsRelationManager extends RelationManager
                 TextColumn::make('pivot.intensity')
                     ->label('Intensidad')
                     ->suffix('%')
-                    ->sortable(),
+                    ->sortable(query: fn ($query, string $direction) => $query->orderBy('product_chord.intensity', $direction)),
             ])
             ->headerActions([
                 AttachAction::make()
