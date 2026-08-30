@@ -1,5 +1,22 @@
 <div class="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#D4AF37] selection:text-black overflow-x-hidden relative">
 
+    <style>
+        @keyframes marqueeScroll {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marqueeScroll 50s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+        .marquee-mask {
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        }
+    </style>
+
     <livewire:store.header />
 
     <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 px-4 sm:px-6 lg:px-8 py-12">
@@ -15,8 +32,48 @@
             <h1 class="text-3xl font-bold text-[#D4AF37] mb-2">{{ $product->name }}</h1>
             <p class="text-gray-400 mb-6 uppercase tracking-widest text-xs">{{ $product->marca_perfume ?? '' }}</p>
 
+            {{-- Precio: lo primero que se busca al entrar a una ficha de producto --}}
+            <div class="mb-8 p-5 rounded-xl border border-[#D4AF37]/30 bg-gradient-to-br from-[#D4AF37]/10 to-transparent">
+                <div class="flex items-end justify-between gap-4 flex-wrap">
+                    <div class="flex items-end gap-3">
+                        @if ($product->is_offer)
+                            <span class="text-base text-gray-500 line-through mb-1">
+                                ${{ number_format($product->retail_price, 2) }}
+                            </span>
+                            <span class="text-4xl sm:text-5xl font-black text-red-500 leading-none">
+                                ${{ number_format($product->offer_price ?? $product->retail_price, 2) }}
+                            </span>
+                        @else
+                            <span class="text-4xl sm:text-5xl font-black text-[#D4AF37] leading-none drop-shadow-[0_0_20px_rgba(212,175,55,0.35)]">
+                                ${{ number_format($product->retail_price, 2) }}
+                            </span>
+                        @endif
+                    </div>
 
-                        {{-- Gráfico de Acordes --}}
+                    @if ($product->stock > 0)
+                        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-green-400">
+                            <span class="w-2 h-2 rounded-full bg-green-400"></span> En stock
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-500">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> Agotado
+                        </span>
+                    @endif
+                </div>
+
+                <button
+                    wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })"
+                    @if ($product->stock <= 0) disabled @endif
+                    class="mt-5 w-full py-3.5 text-xs font-black uppercase tracking-[0.2em] transition-all duration-300
+                        {{ $product->stock > 0
+                            ? 'bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black cursor-pointer'
+                            : 'bg-transparent border border-gray-700 text-gray-600 cursor-not-allowed' }}"
+                >
+                    {{ $product->stock > 0 ? 'Añadir al carrito' : 'Agotado' }}
+                </button>
+            </div>
+
+            {{-- Gráfico de Acordes --}}
             <div class="mb-8">
                 <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
                     Acordes Principales
@@ -57,37 +114,61 @@
                     Pirámide Olfativa
                 </h2>
 
-                <div class="space-y-4">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Notas de Salida</p>
-                        <p class="text-white">{{ $topNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="rounded-lg border border-t-2 border-t-[#D4AF37]/50 border-white/10 bg-white/[0.03] p-4 text-center">
+                        <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70 font-bold mb-2">Notas de Salida</p>
+                        <p class="text-sm text-gray-200 leading-relaxed">{{ $topNotes->pluck('name')->implode(', ') ?: '—' }}</p>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Notas de Corazón</p>
-                        <p class="text-white">{{ $heartNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                    <div class="rounded-lg border border-t-2 border-t-[#D4AF37] border-white/10 bg-white/[0.03] p-4 text-center">
+                        <p class="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold mb-2">Notas de Corazón</p>
+                        <p class="text-sm text-gray-200 leading-relaxed">{{ $heartNotes->pluck('name')->implode(', ') ?: '—' }}</p>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Notas de Fondo</p>
-                        <p class="text-white">{{ $baseNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                    <div class="rounded-lg border border-t-2 border-t-amber-800 border-white/10 bg-white/[0.03] p-4 text-center">
+                        <p class="text-[10px] uppercase tracking-widest text-amber-700 font-bold mb-2">Notas de Fondo</p>
+                        <p class="text-sm text-gray-200 leading-relaxed">{{ $baseNotes->pluck('name')->implode(', ') ?: '—' }}</p>
                     </div>
                 </div>
             </div>
 
-
-            {{-- Precio y añadir al carrito --}}
-            <div class="border-t border-white/10 pt-6">
-                <p class="text-2xl font-light text-[#D4AF37] mb-4">
-                    ${{ number_format($product->offer_price ?? $product->retail_price, 2) }}
-                </p>
-
-                <button
-                    wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })"
-                    class="w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-3 text-xs font-black uppercase tracking-[0.2em] transition-all duration-300"
-                >
-                    Añadir al carrito
-                </button>
-            </div>
-
         </div>
     </div>
+
+    {{-- Fragancias que pueden gustarte --}}
+    @if ($relacionados->isNotEmpty())
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+            <h2 class="text-2xl md:text-3xl font-light uppercase tracking-widest border-l-2 border-[#D4AF37] pl-4 mb-8">
+                Fragancias que <span class="font-bold text-[#D4AF37]">Pueden Gustarte</span>
+            </h2>
+
+            <div class="marquee-mask overflow-hidden">
+                <div class="flex gap-6 w-max animate-marquee">
+                    @foreach ($relacionados->concat($relacionados) as $sugerido)
+                        <a
+                            href="{{ route('store.product', $sugerido->slug) }}"
+                            wire:navigate
+                            class="group w-[220px] shrink-0 flex flex-col rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+                        >
+                            <div class="h-[220px] w-full overflow-hidden relative bg-[#111]">
+                                @if ($sugerido->image)
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($sugerido->image) }}" alt="{{ $sugerido->name }}"
+                                         class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100">
+                                @endif
+                                <div class="absolute bottom-2 right-2 text-gray-400 text-[9px] uppercase tracking-widest font-bold drop-shadow-md">
+                                    {{ $sugerido->marca_perfume ?? 'Sillage' }}
+                                </div>
+                            </div>
+                            <div class="p-4 text-center">
+                                <h3 class="text-xs font-black uppercase tracking-widest text-white truncate group-hover:text-[#D4AF37] transition-colors">
+                                    {{ $sugerido->name }}
+                                </h3>
+                                <p class="text-base font-light text-[#D4AF37] mt-2">
+                                    ${{ number_format($sugerido->offer_price && $sugerido->is_offer ? $sugerido->offer_price : $sugerido->retail_price, 2) }}
+                                </p>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 </div>
