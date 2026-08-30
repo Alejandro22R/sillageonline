@@ -135,33 +135,42 @@
 
     {{-- Fragancias que pueden gustarte --}}
     @if ($relacionados->isNotEmpty())
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-            <h2 class="text-2xl md:text-3xl font-light uppercase tracking-widest border-l-2 border-[#D4AF37] pl-4 mb-8">
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+            <h2 class="text-base font-light uppercase tracking-widest border-l-2 border-[#D4AF37] pl-3 mb-4">
                 Fragancias que <span class="font-bold text-[#D4AF37]">Pueden Gustarte</span>
             </h2>
 
-            <div class="marquee-mask overflow-hidden">
-                <div class="flex gap-6 w-max animate-marquee">
+            <div
+                x-data="{ pausado: false }"
+                @touchstart="pausado = true"
+                @mousedown="pausado = true"
+                @wheel="pausado = true"
+                class="marquee-mask overflow-x-auto overflow-y-hidden hide-scroll"
+                style="-webkit-overflow-scrolling: touch;"
+            >
+                <div
+                    class="flex gap-3 w-max animate-marquee"
+                    :style="pausado ? 'animation-play-state: paused;' : ''"
+                >
                     @foreach ($relacionados->concat($relacionados) as $sugerido)
                         <a
                             href="{{ route('store.product', $sugerido->slug) }}"
                             wire:navigate
-                            class="group w-[220px] shrink-0 flex flex-col rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+                            style="width: 100px; flex-shrink: 0;"
+                            class="group flex flex-col rounded-lg bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
                         >
-                            <div class="h-[220px] w-full overflow-hidden relative bg-[#111]">
+                            <div style="height: 100px; width: 100%;" class="overflow-hidden relative bg-[#111]">
                                 @if ($sugerido->image)
                                     <img src="{{ \Illuminate\Support\Facades\Storage::url($sugerido->image) }}" alt="{{ $sugerido->name }}"
-                                         class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100">
+                                         style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
+                                         class="group-hover:scale-110 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100">
                                 @endif
-                                <div class="absolute bottom-2 right-2 text-gray-400 text-[9px] uppercase tracking-widest font-bold drop-shadow-md">
-                                    {{ $sugerido->marca_perfume ?? 'Sillage' }}
-                                </div>
                             </div>
-                            <div class="p-4 text-center">
-                                <h3 class="text-xs font-black uppercase tracking-widest text-white truncate group-hover:text-[#D4AF37] transition-colors">
+                            <div class="p-2 text-center">
+                                <h3 class="text-[9px] font-black uppercase tracking-wide text-white truncate group-hover:text-[#D4AF37] transition-colors">
                                     {{ $sugerido->name }}
                                 </h3>
-                                <p class="text-base font-light text-[#D4AF37] mt-2">
+                                <p class="text-[11px] font-light text-[#D4AF37] mt-0.5">
                                     ${{ number_format($sugerido->offer_price && $sugerido->is_offer ? $sugerido->offer_price : $sugerido->retail_price, 2) }}
                                 </p>
                             </div>
