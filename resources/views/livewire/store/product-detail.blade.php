@@ -24,11 +24,26 @@
 
                 <div class="flex flex-col gap-1">
                     @foreach ($chords as $chord)
+                        @php
+                            // Brillo percibido del color de fondo (fórmula YIQ) para
+                            // decidir si el texto va en negro o blanco: sobre fondos
+                            // claros (crema, lavanda, amarillo pastel...) el texto
+                            // blanco se pierde por completo.
+                            $hexColor = ltrim($chord->color ?? '#000000', '#');
+                            if (strlen($hexColor) === 3) {
+                                $hexColor = $hexColor[0].$hexColor[0].$hexColor[1].$hexColor[1].$hexColor[2].$hexColor[2];
+                            }
+                            $r = hexdec(substr($hexColor, 0, 2) ?: '00');
+                            $g = hexdec(substr($hexColor, 2, 2) ?: '00');
+                            $b = hexdec(substr($hexColor, 4, 2) ?: '00');
+                            $brillo = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+                            $textoOscuro = $brillo > 150;
+                        @endphp
                         <div
                             class="h-9 flex items-center rounded-r-full shadow-md shadow-black/40 transition-all duration-700"
                             style="width: {{ max($chord->pivot->intensity, 30) }}%; min-width: 140px; background-color: {{ $chord->color }};"
                         >
-                            <span class="w-full text-center text-white text-xs font-bold uppercase tracking-wide px-4 truncate">
+                            <span class="w-full text-center {{ $textoOscuro ? 'text-black' : 'text-white' }} text-xs font-bold uppercase tracking-wide px-4 truncate">
                                 {{ $chord->name }}
                             </span>
                         </div>
