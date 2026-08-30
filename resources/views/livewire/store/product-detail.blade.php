@@ -141,36 +141,52 @@
             </h2>
 
             <div
-                x-data="{ pausado: false }"
-                @touchstart="pausado = true"
-                @mousedown="pausado = true"
-                @wheel="pausado = true"
+                x-data="{
+                    pausado: false,
+                    reanudarTimer: null,
+                    interactuar() {
+                        this.pausado = true;
+                        clearTimeout(this.reanudarTimer);
+                        // A los 5 segundos sin interacción, retoma la animación
+                        // automática justo donde iba (animation-play-state la
+                        // reanuda sin saltos).
+                        this.reanudarTimer = setTimeout(() => { this.pausado = false }, 5000);
+                    }
+                }"
+                @touchstart="interactuar()"
+                @touchmove="interactuar()"
+                @mousedown="interactuar()"
+                @wheel="interactuar()"
+                @scroll="interactuar()"
                 class="marquee-mask overflow-x-auto overflow-y-hidden hide-scroll"
                 style="-webkit-overflow-scrolling: touch;"
             >
                 <div
-                    class="flex gap-3 w-max animate-marquee"
+                    class="flex gap-4 w-max animate-marquee"
                     :style="pausado ? 'animation-play-state: paused;' : ''"
                 >
                     @foreach ($relacionados->concat($relacionados) as $sugerido)
                         <a
                             href="{{ route('store.product', $sugerido->slug) }}"
                             wire:navigate
-                            style="width: 100px; flex-shrink: 0;"
-                            class="group flex flex-col rounded-lg bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
+                            style="width: 150px; flex-shrink: 0;"
+                            class="group flex flex-col rounded-xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.7)]"
                         >
-                            <div style="height: 100px; width: 100%;" class="overflow-hidden relative bg-[#111]">
+                            <div style="height: 150px; width: 100%;" class="overflow-hidden relative bg-[#111]">
                                 @if ($sugerido->image)
                                     <img src="{{ \Illuminate\Support\Facades\Storage::url($sugerido->image) }}" alt="{{ $sugerido->name }}"
                                          style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
                                          class="group-hover:scale-110 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100">
                                 @endif
+                                <div class="absolute bottom-1.5 right-2 text-gray-400 text-[8px] uppercase tracking-widest font-bold drop-shadow-md">
+                                    {{ $sugerido->marca_perfume ?? 'Sillage' }}
+                                </div>
                             </div>
-                            <div class="p-2 text-center">
-                                <h3 class="text-[9px] font-black uppercase tracking-wide text-white truncate group-hover:text-[#D4AF37] transition-colors">
+                            <div class="p-2.5 text-center">
+                                <h3 class="text-[11px] font-black uppercase tracking-wide text-white truncate group-hover:text-[#D4AF37] transition-colors">
                                     {{ $sugerido->name }}
                                 </h3>
-                                <p class="text-[11px] font-light text-[#D4AF37] mt-0.5">
+                                <p class="text-sm font-light text-[#D4AF37] mt-1">
                                     ${{ number_format($sugerido->offer_price && $sugerido->is_offer ? $sugerido->offer_price : $sugerido->retail_price, 2) }}
                                 </p>
                             </div>
