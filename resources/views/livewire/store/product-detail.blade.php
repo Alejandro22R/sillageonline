@@ -52,7 +52,7 @@
 
                     @if ($product->stock > 0)
                         <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-green-400">
-                            <span class="w-2 h-2 rounded-full bg-green-400"></span> Disponible!
+                            <span class="w-2 h-2 rounded-full bg-green-400"></span> Disponible
                         </span>
                     @else
                         <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-500">
