@@ -57,7 +57,7 @@
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
                                 <div class="w-full overflow-hidden relative bg-[#111] p-2" style="aspect-ratio: 2 / 3;">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-fill object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
                                     @endif
                                     @if($product->stock <= 0)
                                         <div class="absolute inset-0 bg-black/55 z-20"></div>
@@ -120,7 +120,7 @@
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
                                 <div class="w-full overflow-hidden relative bg-[#111] p-2" style="aspect-ratio: 2 / 3;">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-fill object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
                                     @endif
                                     @if($product->stock <= 0)
                                         <div class="absolute inset-0 bg-black/55 z-20"></div>
@@ -209,7 +209,7 @@
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
                                 <div class="w-full overflow-hidden relative bg-[#111] p-1.5 sm:p-2" style="aspect-ratio: 2 / 3;">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-fill object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
                                     @endif
 
                                     @if($product->stock <= 0)
