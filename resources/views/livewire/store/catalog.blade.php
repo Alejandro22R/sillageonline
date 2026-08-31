@@ -55,9 +55,9 @@
                     @foreach($exclusivos as $product)
                         <div class="min-w-[280px] md:min-w-[320px] snap-center group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2">
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
-                                <div class="h-[320px] w-full overflow-hidden relative bg-[#111]">
+                                <div class="h-[320px] w-full overflow-hidden relative bg-[#111] p-4">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
                                     @endif
                                     @if($product->stock <= 0)
                                         <div class="absolute inset-0 bg-black/55 z-20"></div>
@@ -118,9 +118,9 @@
                     @foreach($ofertas as $product)
                         <div class="min-w-[280px] md:min-w-[320px] snap-center group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-red-600/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2">
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
-                                <div class="h-[320px] w-full overflow-hidden relative bg-[#111]">
+                                <div class="h-[320px] w-full overflow-hidden relative bg-[#111] p-4">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
                                     @endif
                                     @if($product->stock <= 0)
                                         <div class="absolute inset-0 bg-black/55 z-20"></div>
@@ -207,9 +207,9 @@
                         >
 
                             <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
-                                <div class="h-[200px] sm:h-[320px] w-full overflow-hidden relative bg-[#111]">
+                                <div class="h-[200px] sm:h-[320px] w-full overflow-hidden relative bg-[#111] p-3 sm:p-4">
                                     @if($product->image)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
                                     @endif
 
                                     @if($product->stock <= 0)
