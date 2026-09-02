@@ -1,16 +1,6 @@
 <div class="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#D4AF37] selection:text-black overflow-x-hidden relative">
 
     <style>
-        @keyframes marqueeScroll {
-            from { transform: translateX(0); }
-            to   { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-            animation: marqueeScroll 50s linear infinite;
-        }
-        .animate-marquee:hover {
-            animation-play-state: paused;
-        }
         .marquee-mask {
             mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
             -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
@@ -155,27 +145,48 @@
                 x-data="{
                     pausado: false,
                     reanudarTimer: null,
+                    // El auto-scroll y el arrastre manual mueven la MISMA
+                    // propiedad (scrollLeft del contenedor), nunca un
+                    // transform aparte: mezclar los dos movimientos era lo
+                    // que hacía que el carrusel 'desapareciera' al arrastrar
+                    // manualmente hasta el final.
+                    iniciarAuto() {
+                        if (!{{ $suficientesParaLoop ? 'true' : 'false' }}) return;
+                        const avanzar = () => {
+                            const el = this.$refs.pista;
+                            if (el && !this.pausado) {
+                                el.scrollLeft += 0.6;
+                                // La lista está duplicada, así que al pasar la
+                                // mitad reiniciamos sin salto visible: lo que
+                                // sigue es una copia idéntica de lo anterior.
+                                const mitad = el.scrollWidth / 2;
+                                if (el.scrollLeft >= mitad) {
+                                    el.scrollLeft -= mitad;
+                                }
+                            }
+                            requestAnimationFrame(avanzar);
+                        };
+                        requestAnimationFrame(avanzar);
+                    },
                     interactuar() {
                         this.pausado = true;
                         clearTimeout(this.reanudarTimer);
-                        // A los 5 segundos sin interacción, retoma la animación
-                        // automática justo donde iba (animation-play-state la
-                        // reanuda sin saltos).
+                        // A los 5 segundos sin interacción, retoma el
+                        // auto-scroll desde donde haya quedado (incluso si el
+                        // usuario arrastró hasta el final de la lista).
                         this.reanudarTimer = setTimeout(() => { this.pausado = false }, 5000);
                     }
                 }"
+                x-init="iniciarAuto()"
+                x-ref="pista"
                 @touchstart="interactuar()"
                 @touchmove="interactuar()"
                 @mousedown="interactuar()"
                 @wheel="interactuar()"
-                @scroll="interactuar()"
                 class="{{ $suficientesParaLoop ? 'marquee-mask overflow-x-auto overflow-y-hidden hide-scroll' : '' }}"
                 style="-webkit-overflow-scrolling: touch;"
             >
-                <div
-                    class="flex gap-4 {{ $suficientesParaLoop ? 'w-max animate-marquee' : 'flex-wrap justify-center' }}"
-                    @if ($suficientesParaLoop) :style="pausado ? 'animation-play-state: paused;' : ''" @endif
-                >
+                <div class="flex gap-4 {{ $suficientesParaLoop ? '' : 'flex-wrap justify-center' }}">
                     @foreach ($itemsCarrusel as $sugerido)
                         <a
                             href="{{ route('store.product', $sugerido->slug) }}"
