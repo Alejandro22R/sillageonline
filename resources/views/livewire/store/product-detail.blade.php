@@ -53,6 +53,56 @@
                     </div>
                 </div>
             @endif
+
+            {{-- Estaciones recomendadas --}}
+            @php
+                $estaciones = [
+                    'temporada_invierno_pct'  => [
+                        'label' => 'Invierno',
+                        'color' => '#60A5FA',
+                        'icono' => 'M12 2v20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07',
+                    ],
+                    'temporada_primavera_pct' => [
+                        'label' => 'Primavera',
+                        'color' => '#4ADE80',
+                        'icono' => 'M12 10a2 2 0 100 4 2 2 0 000-4zM12 10V4M12 14v6M10 12H4m6 0h6',
+                    ],
+                    'temporada_verano_pct'    => [
+                        'label' => 'Verano',
+                        'color' => '#FACC15',
+                        'icono' => 'M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.06 16.94l-1.42 1.42m0-12.72l1.42 1.42M16.94 16.94l1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z',
+                    ],
+                    'temporada_otono_pct'     => [
+                        'label' => 'Otoño',
+                        'color' => '#FB923C',
+                        'icono' => 'M12 21c-4-2-7-6-7-11a9 9 0 0114-7c3 3 3 8 0 12-2 2-4 3-7 6zM12 21V9',
+                    ],
+                ];
+            @endphp
+            @if (collect(array_keys($estaciones))->contains(fn ($campo) => ($product->{$campo} ?? 0) > 0))
+                <div class="mt-6">
+                    <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
+                        Estaciones
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        @foreach ($estaciones as $campo => $info)
+                            @php $activa = ($product->{$campo} ?? 0) > 0; @endphp
+                            <div
+                                class="flex items-center gap-2 rounded-lg px-4 py-3 font-bold uppercase text-xs tracking-wide"
+                                style="{{ $activa
+                                    ? 'background-color:' . $info['color'] . ';color:#000;'
+                                    : 'background-color:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);' }}"
+                            >
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $info['icono'] }}"/>
+                                </svg>
+                                {{ $info['label'] }}
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
 
         {{-- Información --}}
@@ -188,37 +238,6 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                             </svg>
                         </div>
-                    </div>
-                </div>
-            @endif
-
-            {{-- Estaciones: porcentaje de recomendación por estación --}}
-            @php
-                $estaciones = [
-                    'temporada_invierno_pct'  => ['label' => 'Invierno',  'color' => '#60A5FA'],
-                    'temporada_primavera_pct' => ['label' => 'Primavera', 'color' => '#4ADE80'],
-                    'temporada_verano_pct'    => ['label' => 'Verano',    'color' => '#FACC15'],
-                    'temporada_otono_pct'     => ['label' => 'Otoño',     'color' => '#FB923C'],
-                ];
-            @endphp
-            @if (collect(array_keys($estaciones))->contains(fn ($campo) => ! is_null($product->{$campo})))
-                <div class="mb-8">
-                    <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
-                        Estaciones
-                    </h2>
-
-                    <div class="space-y-3">
-                        @foreach ($estaciones as $campo => $info)
-                            <div>
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="text-xs font-bold uppercase tracking-widest text-white">{{ $info['label'] }}</span>
-                                    <span class="text-xs font-bold text-gray-400">{{ $product->{$campo} ?? 0 }}%</span>
-                                </div>
-                                <div class="w-full rounded-full bg-white/5 overflow-hidden" style="height:8px;">
-                                    <div class="h-full rounded-full" style="width: {{ $product->{$campo} ?? 0 }}%; background-color: {{ $info['color'] }};"></div>
-                                </div>
-                            </div>
-                        @endforeach
                     </div>
                 </div>
             @endif
