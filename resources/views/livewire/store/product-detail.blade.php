@@ -118,60 +118,19 @@
                     Pirámide Olfativa
                 </h2>
 
-                @php
-                    // Cada etapa se dibuja igual: una tarjeta cuadrada con
-                    // borde dorado por nota. Dentro se muestra, en este orden
-                    // de prioridad, la imagen subida desde el admin (Notas
-                    // Olfativas), luego el emoji de la nota, y si no hay
-                    // ninguno de los dos, un ícono genérico según la etapa.
-                    $etapasPiramide = [
-                        ['label' => 'Notas de Salida',   'notas' => $topNotes,   'tipo' => 'salida'],
-                        ['label' => 'Notas de Corazón',  'notas' => $heartNotes, 'tipo' => 'corazon'],
-                        ['label' => 'Notas de Fondo',    'notas' => $baseNotes,  'tipo' => 'fondo'],
-                    ];
-                @endphp
-
-                <div class="space-y-8">
-                    @foreach ($etapasPiramide as $etapa)
-                        <div>
-                            <p class="text-sm text-gray-500 mb-3 uppercase tracking-widest">{{ $etapa['label'] }}</p>
-
-                            @if ($etapa['notas']->isEmpty())
-                                <p class="text-white/40 text-sm">—</p>
-                            @else
-                                <div class="grid grid-cols-3 gap-4">
-                                    @foreach ($etapa['notas'] as $nota)
-                                        <div class="flex flex-col items-center text-center">
-                                            <div class="w-full aspect-square rounded-xl border-2 border-[#D4AF37] overflow-hidden flex items-center justify-center bg-white shadow-md shadow-black/40">
-                                                @if ($nota->image)
-                                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($nota->image) }}"
-                                                         alt="{{ $nota->name }}"
-                                                         class="w-full h-full object-cover">
-                                                @elseif ($nota->icon)
-                                                    <span style="font-size:32px;line-height:1;">{{ $nota->icon }}</span>
-                                                @elseif ($etapa['tipo'] === 'salida')
-                                                    <svg class="w-8 h-8 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 2l1.6 5.2L19 9l-5.4 1.8L12 16l-1.6-5.2L5 9l5.4-1.8L12 2zM5 15l.8 2.6L8.4 18.4 5.8 19.2 5 22l-.8-2.8L1.6 18.4l2.6-.8L5 15zm14 0l.8 2.6 2.6.8-2.6.8L19 22l-.8-2.8-2.6-.8 2.6-.8L19 15z"/>
-                                                    </svg>
-                                                @elseif ($etapa['tipo'] === 'corazon')
-                                                    <svg class="w-8 h-8 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 21s-6.7-4.35-9.3-8.1C1 10.2 1.6 6.9 4.3 5.4c2.2-1.2 4.7-.5 6.2 1.4l1.5 1.9 1.5-1.9c1.5-1.9 4-2.6 6.2-1.4 2.7 1.5 3.3 4.8 1.6 7.5C18.7 16.65 12 21 12 21z"/>
-                                                    </svg>
-                                                @else
-                                                    <svg class="w-8 h-8 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 2c1 3-3 4-3 7.5C9 12 10.5 13 12 13s3-1 3-3.5c0-1-.4-1.8-.9-2.6.9.4 3.4 2 3.4 5.6C17.5 16.4 15 19 12 19s-5.5-2.6-5.5-6.5C6.5 8 9 6.2 12 2z"/>
-                                                    </svg>
-                                                @endif
-                                            </div>
-                                            <span class="mt-2 font-bold uppercase tracking-wide text-white leading-tight" style="font-size:11px;">
-                                                {{ $nota->name }}
-                                            </span>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-                    @endforeach
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="rounded-lg border border-t-2 border-t-[#D4AF37]/50 border-white/10 bg-white/[0.03] p-4 text-center">
+                        <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70 font-bold mb-2">Notas de Salida</p>
+                        <p class="text-sm text-gray-200 leading-relaxed">{{ $topNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                    </div>
+                    <div class="rounded-lg border border-t-2 border-t-[#D4AF37] border-white/10 bg-white/[0.03] p-4 text-center">
+                        <p class="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold mb-2">Notas de Corazón</p>
+                        <p class="text-sm text-gray-200 leading-relaxed">{{ $heartNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                    </div>
+                    <div class="rounded-lg border border-t-2 border-t-amber-800 border-white/10 bg-white/[0.03] p-4 text-center">
+                        <p class="text-[10px] uppercase tracking-widest text-amber-700 font-bold mb-2">Notas de Fondo</p>
+                        <p class="text-sm text-gray-200 leading-relaxed">{{ $baseNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                    </div>
                 </div>
             </div>
 
