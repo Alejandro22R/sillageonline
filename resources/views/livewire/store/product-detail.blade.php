@@ -19,6 +19,40 @@
         <div>
             <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}"
                  class="w-full rounded-lg shadow-lg shadow-black/60 border border-white/10">
+
+            {{-- Perfil Olfativo: longevidad y estela --}}
+            @if ($product->longevidad_horas || $product->estela)
+                <div class="mt-6">
+                    <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
+                        Perfil Olfativo
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        @if ($product->longevidad_horas)
+                            <div class="rounded-lg border border-[#D4AF37]/30 bg-white/[0.03] p-4 flex items-center gap-3">
+                                <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70">Longevidad</p>
+                                    <p class="text-sm font-bold text-[#D4AF37]">{{ $product->longevidad_horas }} h</p>
+                                </div>
+                            </div>
+                        @endif
+                        @if ($product->estela)
+                            <div class="rounded-lg border border-[#D4AF37]/30 bg-white/[0.03] p-4 flex items-center gap-3">
+                                <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0M3 14c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/>
+                                </svg>
+                                <div>
+                                    <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70">Estela</p>
+                                    <p class="text-sm font-bold text-[#D4AF37]">{{ $product->estela }}</p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
 
         {{-- Información --}}
@@ -124,86 +158,67 @@
                 </div>
             </div>
 
-            {{-- Perfil Olfativo: longevidad, estela, uso día/noche y estaciones --}}
-            @if ($product->longevidad_horas || $product->estela || ! is_null($product->uso_dia_pct) || $product->temporada_invierno || $product->temporada_primavera || $product->temporada_verano || $product->temporada_otono)
+            {{-- Uso Recomendado: proporción de uso de día vs de noche --}}
+            @if (! is_null($product->uso_dia_pct))
                 <div class="mb-8">
                     <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
-                        Perfil Olfativo
+                        Uso Recomendado
                     </h2>
 
-                    <div class="space-y-4">
-                        @if ($product->longevidad_horas || $product->estela)
-                            <div class="grid grid-cols-2 gap-3">
-                                @if ($product->longevidad_horas)
-                                    <div class="rounded-lg border border-white/10 bg-white/[0.03] p-4 flex items-center gap-3">
-                                        <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        <div>
-                                            <p class="text-[10px] uppercase tracking-widest text-gray-500">Longevidad</p>
-                                            <p class="text-sm font-bold text-white">{{ $product->longevidad_horas }} h</p>
-                                        </div>
-                                    </div>
-                                @endif
-                                @if ($product->estela)
-                                    <div class="rounded-lg border border-white/10 bg-white/[0.03] p-4 flex items-center gap-3">
-                                        <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0M3 14c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/>
-                                        </svg>
-                                        <div>
-                                            <p class="text-[10px] uppercase tracking-widest text-gray-500">Estela</p>
-                                            <p class="text-sm font-bold text-white">{{ $product->estela }}</p>
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                        @endif
+                    <div class="flex rounded-full overflow-hidden border border-[#D4AF37]/40 shadow-[0_0_25px_rgba(212,175,55,0.2)]" style="height:52px;">
+                        <div
+                            class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#D4AF37] to-[#a9822f]"
+                            style="width: {{ max($product->uso_dia_pct, 15) }}%;"
+                        >
+                            <svg class="w-5 h-5 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.06 16.94l-1.42 1.42m0-12.72l1.42 1.42M16.94 16.94l1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            @if ($product->uso_dia_pct >= 25)
+                                <span class="text-xs font-black uppercase tracking-widest text-black">Día</span>
+                            @endif
+                        </div>
+                        <div
+                            class="flex items-center justify-center gap-2"
+                            style="width: {{ max(100 - $product->uso_dia_pct, 15) }}%; background: linear-gradient(90deg, #17172c, #05050a);"
+                        >
+                            @if ((100 - $product->uso_dia_pct) >= 25)
+                                <span class="text-xs font-black uppercase tracking-widest text-[#D4AF37]">Noche</span>
+                            @endif
+                            <svg class="w-5 h-5 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
-                        @if (! is_null($product->uso_dia_pct))
+            {{-- Estaciones: porcentaje de recomendación por estación --}}
+            @php
+                $estaciones = [
+                    'temporada_invierno_pct'  => ['label' => 'Invierno',  'color' => '#60A5FA'],
+                    'temporada_primavera_pct' => ['label' => 'Primavera', 'color' => '#4ADE80'],
+                    'temporada_verano_pct'    => ['label' => 'Verano',    'color' => '#FACC15'],
+                    'temporada_otono_pct'     => ['label' => 'Otoño',     'color' => '#FB923C'],
+                ];
+            @endphp
+            @if (collect(array_keys($estaciones))->contains(fn ($campo) => ! is_null($product->{$campo})))
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
+                        Estaciones
+                    </h2>
+
+                    <div class="space-y-3">
+                        @foreach ($estaciones as $campo => $info)
                             <div>
-                                <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Uso recomendado</p>
-                                <div class="flex rounded-full overflow-hidden border border-white/10" style="height:36px;">
-                                    <div
-                                        class="flex items-center justify-center text-[11px] font-bold uppercase tracking-wide text-black bg-[#D4AF37]"
-                                        style="width: {{ max($product->uso_dia_pct, 8) }}%;"
-                                    >
-                                        @if ($product->uso_dia_pct >= 20) ☀ Día @endif
-                                    </div>
-                                    <div
-                                        class="flex items-center justify-center text-[11px] font-bold uppercase tracking-wide text-white"
-                                        style="width: {{ max(100 - $product->uso_dia_pct, 8) }}%; background-color:#1a1a2e;"
-                                    >
-                                        @if ((100 - $product->uso_dia_pct) >= 20) ☾ Noche @endif
-                                    </div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-xs font-bold uppercase tracking-widest text-white">{{ $info['label'] }}</span>
+                                    <span class="text-xs font-bold text-gray-400">{{ $product->{$campo} ?? 0 }}%</span>
+                                </div>
+                                <div class="w-full rounded-full bg-white/5 overflow-hidden" style="height:8px;">
+                                    <div class="h-full rounded-full" style="width: {{ $product->{$campo} ?? 0 }}%; background-color: {{ $info['color'] }};"></div>
                                 </div>
                             </div>
-                        @endif
-
-                        @if ($product->temporada_invierno || $product->temporada_primavera || $product->temporada_verano || $product->temporada_otono)
-                            @php
-                                $estaciones = [
-                                    'temporada_invierno'  => ['label' => 'Invierno',  'color' => '#60A5FA'],
-                                    'temporada_primavera' => ['label' => 'Primavera', 'color' => '#4ADE80'],
-                                    'temporada_verano'    => ['label' => 'Verano',    'color' => '#FACC15'],
-                                    'temporada_otono'     => ['label' => 'Otoño',     'color' => '#FB923C'],
-                                ];
-                            @endphp
-                            <div>
-                                <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Estaciones</p>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach ($estaciones as $campo => $info)
-                                        <span
-                                            class="text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full border"
-                                            style="{{ $product->{$campo}
-                                                ? 'background-color:' . $info['color'] . ';color:#000;border-color:' . $info['color'] . ';'
-                                                : 'background-color:transparent;color:rgba(255,255,255,0.3);border-color:rgba(255,255,255,0.15);' }}"
-                                        >
-                                            {{ $info['label'] }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
+                        @endforeach
                     </div>
                 </div>
             @endif

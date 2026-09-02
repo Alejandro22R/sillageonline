@@ -155,17 +155,33 @@ class ProductForm
                     ->suffix('%')
                     ->helperText('0 = solo de noche, 100 = solo de día, 50 = ambos por igual.'),
 
-                Toggle::make('temporada_invierno')
-                    ->label('Invierno'),
+                TextInput::make('temporada_invierno_pct')
+                    ->label('Recomendación en Invierno (%)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->suffix('%'),
 
-                Toggle::make('temporada_primavera')
-                    ->label('Primavera'),
+                TextInput::make('temporada_primavera_pct')
+                    ->label('Recomendación en Primavera (%)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->suffix('%'),
 
-                Toggle::make('temporada_verano')
-                    ->label('Verano'),
+                TextInput::make('temporada_verano_pct')
+                    ->label('Recomendación en Verano (%)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->suffix('%'),
 
-                Toggle::make('temporada_otono')
-                    ->label('Otoño'),
+                TextInput::make('temporada_otono_pct')
+                    ->label('Recomendación en Otoño (%)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->suffix('%'),
             ]);
     }
 }

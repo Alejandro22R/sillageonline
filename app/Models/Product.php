@@ -28,19 +28,15 @@ class Product extends Model
         'longevidad_horas',
         'estela',
         'uso_dia_pct',
-        'temporada_invierno',
-        'temporada_primavera',
-        'temporada_verano',
-        'temporada_otono',
+        'temporada_invierno_pct',
+        'temporada_primavera_pct',
+        'temporada_verano_pct',
+        'temporada_otono_pct',
     ];
 
     // 2. ESTA PROPIEDAD DEBE IR AFUERA. Esto es lo que le dice a Laravel que lo guarde como array/JSON
     protected $casts = [
         'metodo_pago' => 'array',
-        'temporada_invierno' => 'boolean',
-        'temporada_primavera' => 'boolean',
-        'temporada_verano' => 'boolean',
-        'temporada_otono' => 'boolean',
     ];
 
     /**
