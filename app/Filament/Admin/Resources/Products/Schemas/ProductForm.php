@@ -126,6 +126,46 @@ class ProductForm
                     ->numeric()
                     ->prefix('$')
                     ->visible(fn ($get): bool => (bool) $get('is_offer')),
+
+                // --- Perfil Olfativo (longevidad, estela, día/noche, estaciones) ---
+
+                TextInput::make('longevidad_horas')
+                    ->label('Longevidad (horas)')
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(24)
+                    ->suffix('h'),
+
+                Select::make('estela')
+                    ->label('Estela / Proyección')
+                    ->options([
+                        'Suave'    => 'Suave',
+                        'Moderada' => 'Moderada',
+                        'Fuerte'   => 'Fuerte',
+                        'Enorme'   => 'Enorme',
+                    ])
+                    ->native(false),
+
+                TextInput::make('uso_dia_pct')
+                    ->label('Uso de día (%)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->default(50)
+                    ->suffix('%')
+                    ->helperText('0 = solo de noche, 100 = solo de día, 50 = ambos por igual.'),
+
+                Toggle::make('temporada_invierno')
+                    ->label('Invierno'),
+
+                Toggle::make('temporada_primavera')
+                    ->label('Primavera'),
+
+                Toggle::make('temporada_verano')
+                    ->label('Verano'),
+
+                Toggle::make('temporada_otono')
+                    ->label('Otoño'),
             ]);
     }
 }

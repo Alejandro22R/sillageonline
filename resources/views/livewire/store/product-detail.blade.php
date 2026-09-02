@@ -124,6 +124,90 @@
                 </div>
             </div>
 
+            {{-- Perfil Olfativo: longevidad, estela, uso día/noche y estaciones --}}
+            @if ($product->longevidad_horas || $product->estela || ! is_null($product->uso_dia_pct) || $product->temporada_invierno || $product->temporada_primavera || $product->temporada_verano || $product->temporada_otono)
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
+                        Perfil Olfativo
+                    </h2>
+
+                    <div class="space-y-4">
+                        @if ($product->longevidad_horas || $product->estela)
+                            <div class="grid grid-cols-2 gap-3">
+                                @if ($product->longevidad_horas)
+                                    <div class="rounded-lg border border-white/10 bg-white/[0.03] p-4 flex items-center gap-3">
+                                        <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        <div>
+                                            <p class="text-[10px] uppercase tracking-widest text-gray-500">Longevidad</p>
+                                            <p class="text-sm font-bold text-white">{{ $product->longevidad_horas }} h</p>
+                                        </div>
+                                    </div>
+                                @endif
+                                @if ($product->estela)
+                                    <div class="rounded-lg border border-white/10 bg-white/[0.03] p-4 flex items-center gap-3">
+                                        <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0M3 14c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/>
+                                        </svg>
+                                        <div>
+                                            <p class="text-[10px] uppercase tracking-widest text-gray-500">Estela</p>
+                                            <p class="text-sm font-bold text-white">{{ $product->estela }}</p>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
+                        @if (! is_null($product->uso_dia_pct))
+                            <div>
+                                <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Uso recomendado</p>
+                                <div class="flex rounded-full overflow-hidden border border-white/10" style="height:36px;">
+                                    <div
+                                        class="flex items-center justify-center text-[11px] font-bold uppercase tracking-wide text-black bg-[#D4AF37]"
+                                        style="width: {{ max($product->uso_dia_pct, 8) }}%;"
+                                    >
+                                        @if ($product->uso_dia_pct >= 20) ☀ Día @endif
+                                    </div>
+                                    <div
+                                        class="flex items-center justify-center text-[11px] font-bold uppercase tracking-wide text-white"
+                                        style="width: {{ max(100 - $product->uso_dia_pct, 8) }}%; background-color:#1a1a2e;"
+                                    >
+                                        @if ((100 - $product->uso_dia_pct) >= 20) ☾ Noche @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($product->temporada_invierno || $product->temporada_primavera || $product->temporada_verano || $product->temporada_otono)
+                            @php
+                                $estaciones = [
+                                    'temporada_invierno'  => ['label' => 'Invierno',  'color' => '#60A5FA'],
+                                    'temporada_primavera' => ['label' => 'Primavera', 'color' => '#4ADE80'],
+                                    'temporada_verano'    => ['label' => 'Verano',    'color' => '#FACC15'],
+                                    'temporada_otono'     => ['label' => 'Otoño',     'color' => '#FB923C'],
+                                ];
+                            @endphp
+                            <div>
+                                <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Estaciones</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach ($estaciones as $campo => $info)
+                                        <span
+                                            class="text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full border"
+                                            style="{{ $product->{$campo}
+                                                ? 'background-color:' . $info['color'] . ';color:#000;border-color:' . $info['color'] . ';'
+                                                : 'background-color:transparent;color:rgba(255,255,255,0.3);border-color:rgba(255,255,255,0.15);' }}"
+                                        >
+                                            {{ $info['label'] }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
         </div>
     </div>
 

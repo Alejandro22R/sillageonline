@@ -24,12 +24,23 @@ class Product extends Model
         'image',
         'is_exclusive',
         'is_offer',
-        'offer_price'
+        'offer_price',
+        'longevidad_horas',
+        'estela',
+        'uso_dia_pct',
+        'temporada_invierno',
+        'temporada_primavera',
+        'temporada_verano',
+        'temporada_otono',
     ];
 
     // 2. ESTA PROPIEDAD DEBE IR AFUERA. Esto es lo que le dice a Laravel que lo guarde como array/JSON
     protected $casts = [
         'metodo_pago' => 'array',
+        'temporada_invierno' => 'boolean',
+        'temporada_primavera' => 'boolean',
+        'temporada_verano' => 'boolean',
+        'temporada_otono' => 'boolean',
     ];
 
     /**
