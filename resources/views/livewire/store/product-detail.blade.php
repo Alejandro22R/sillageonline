@@ -5,6 +5,24 @@
             mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
             -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         }
+
+        /*
+         * Simetría entre columnas en la ficha de producto: a partir de
+         * md (igual breakpoint que md:grid-cols-2 de Tailwind), cada
+         * bloque se ubica en una fila explícita del grid para que la
+         * columna izquierda y la derecha queden alineadas por fila. En
+         * mobile no se aplica nada: los bloques simplemente se apilan
+         * en el orden en que aparecen en el HTML.
+         */
+        @media (min-width: 768px) {
+            .pd-imagen        { grid-column: 1; grid-row: 1; }
+            .pd-titulo-precio { grid-column: 2; grid-row: 1; }
+            .pd-acordes       { grid-column: 2; grid-row: 2; }
+            .pd-perfil        { grid-column: 1; grid-row: 3; }
+            .pd-piramide      { grid-column: 2; grid-row: 3; }
+            .pd-estaciones    { grid-column: 1; grid-row: 4; }
+            .pd-uso           { grid-column: 2; grid-row: 4; }
+        }
     </style>
 
     <livewire:store.header />
@@ -16,102 +34,18 @@
     <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 px-4 sm:px-6 lg:px-8 py-12 relative z-10">
 
         {{-- Imagen del producto --}}
-        <div>
+        <div class="pd-imagen">
             <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}"
                  class="w-full rounded-lg shadow-lg shadow-black/60 border border-white/10">
-
-            {{-- Perfil Olfativo: longevidad y estela --}}
-            @if ($product->longevidad_horas || $product->estela)
-                <div class="mt-6">
-                    <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
-                        Perfil Olfativo
-                    </h2>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        @if ($product->longevidad_horas)
-                            <div class="rounded-lg border border-[#D4AF37]/30 bg-white/[0.03] p-4 flex items-center gap-3">
-                                <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <div>
-                                    <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70">Longevidad</p>
-                                    <p class="text-sm font-bold text-[#D4AF37]">{{ $product->longevidad_horas }} h</p>
-                                </div>
-                            </div>
-                        @endif
-                        @if ($product->estela)
-                            <div class="rounded-lg border border-[#D4AF37]/30 bg-white/[0.03] p-4 flex items-center gap-3">
-                                <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0M3 14c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/>
-                                </svg>
-                                <div>
-                                    <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70">Estela</p>
-                                    <p class="text-sm font-bold text-[#D4AF37]">{{ $product->estela }}</p>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endif
-
-            {{-- Estaciones recomendadas --}}
-            @php
-                $estaciones = [
-                    'temporada_invierno_pct'  => [
-                        'label' => 'Invierno',
-                        'color' => '#60A5FA',
-                        'icono' => 'M12 2v20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07',
-                    ],
-                    'temporada_primavera_pct' => [
-                        'label' => 'Primavera',
-                        'color' => '#4ADE80',
-                        'icono' => 'M12 10a2 2 0 100 4 2 2 0 000-4zM12 10V4M12 14v6M10 12H4m6 0h6',
-                    ],
-                    'temporada_verano_pct'    => [
-                        'label' => 'Verano',
-                        'color' => '#FACC15',
-                        'icono' => 'M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.06 16.94l-1.42 1.42m0-12.72l1.42 1.42M16.94 16.94l1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z',
-                    ],
-                    'temporada_otono_pct'     => [
-                        'label' => 'Otoño',
-                        'color' => '#FB923C',
-                        'icono' => 'M12 21c-4-2-7-6-7-11a9 9 0 0114-7c3 3 3 8 0 12-2 2-4 3-7 6zM12 21V9',
-                    ],
-                ];
-            @endphp
-            @if (collect(array_keys($estaciones))->contains(fn ($campo) => ($product->{$campo} ?? 0) > 0))
-                <div class="mt-6">
-                    <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
-                        Estaciones
-                    </h2>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        @foreach ($estaciones as $campo => $info)
-                            @php $activa = ($product->{$campo} ?? 0) > 0; @endphp
-                            <div
-                                class="flex items-center gap-2 rounded-lg px-4 py-3 font-bold uppercase text-xs tracking-wide"
-                                style="{{ $activa
-                                    ? 'background-color:' . $info['color'] . ';color:#000;'
-                                    : 'background-color:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);' }}"
-                            >
-                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $info['icono'] }}"/>
-                                </svg>
-                                {{ $info['label'] }}
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
         </div>
 
-        {{-- Información --}}
-        <div>
+        {{-- Título, marca y precio --}}
+        <div class="pd-titulo-precio">
             <h1 class="text-3xl font-bold text-[#D4AF37] mb-2">{{ $product->name }}</h1>
             <p class="text-gray-400 mb-6 uppercase tracking-widest text-xs">{{ $product->marca_perfume ?? '' }}</p>
 
             {{-- Precio: lo primero que se busca al entrar a una ficha de producto --}}
-            <div class="mb-8 p-5 rounded-xl border border-[#D4AF37]/30 bg-gradient-to-br from-[#D4AF37]/10 to-transparent">
+            <div class="p-5 rounded-xl border border-[#D4AF37]/30 bg-gradient-to-br from-[#D4AF37]/10 to-transparent">
                 <div class="flex items-end justify-between gap-4 flex-wrap">
                     <div class="flex items-end gap-3">
                         @if ($product->is_offer)
@@ -150,99 +84,187 @@
                     {{ $product->stock > 0 ? 'Añadir al carrito' : 'Agotado' }}
                 </button>
             </div>
+        </div>
 
-            {{-- Gráfico de Acordes --}}
-            <div class="mb-8">
+        {{-- Gráfico de Acordes --}}
+        <div class="pd-acordes">
+            <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
+                Acordes Principales
+            </h2>
+
+            <div class="flex flex-col gap-1">
+                @foreach ($chords as $chord)
+                    @php
+                        // Brillo percibido del color de fondo (fórmula YIQ) para
+                        // decidir si el texto va en negro o blanco: sobre fondos
+                        // claros (crema, lavanda, amarillo pastel...) el texto
+                        // blanco se pierde por completo.
+                        $hexColor = ltrim($chord->color ?? '#000000', '#');
+                        if (strlen($hexColor) === 3) {
+                            $hexColor = $hexColor[0].$hexColor[0].$hexColor[1].$hexColor[1].$hexColor[2].$hexColor[2];
+                        }
+                        $r = hexdec(substr($hexColor, 0, 2) ?: '00');
+                        $g = hexdec(substr($hexColor, 2, 2) ?: '00');
+                        $b = hexdec(substr($hexColor, 4, 2) ?: '00');
+                        $brillo = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+                        $textoOscuro = $brillo > 150;
+                    @endphp
+                    <div
+                        class="h-9 flex items-center rounded-r-full shadow-md shadow-black/40 transition-all duration-700"
+                        style="width: {{ max($chord->pivot->intensity, 30) }}%; min-width: 140px; background-color: {{ $chord->color }};"
+                    >
+                        <span class="w-full text-center {{ $textoOscuro ? 'text-black' : 'text-white' }} text-xs font-bold uppercase tracking-wide px-4 truncate">
+                            {{ $chord->name }}
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Perfil Olfativo: longevidad y estela --}}
+        @if ($product->longevidad_horas || $product->estela)
+            <div class="pd-perfil">
                 <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
-                    Acordes Principales
+                    Perfil Olfativo
                 </h2>
 
-                <div class="flex flex-col gap-1">
-                    @foreach ($chords as $chord)
-                        @php
-                            // Brillo percibido del color de fondo (fórmula YIQ) para
-                            // decidir si el texto va en negro o blanco: sobre fondos
-                            // claros (crema, lavanda, amarillo pastel...) el texto
-                            // blanco se pierde por completo.
-                            $hexColor = ltrim($chord->color ?? '#000000', '#');
-                            if (strlen($hexColor) === 3) {
-                                $hexColor = $hexColor[0].$hexColor[0].$hexColor[1].$hexColor[1].$hexColor[2].$hexColor[2];
-                            }
-                            $r = hexdec(substr($hexColor, 0, 2) ?: '00');
-                            $g = hexdec(substr($hexColor, 2, 2) ?: '00');
-                            $b = hexdec(substr($hexColor, 4, 2) ?: '00');
-                            $brillo = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
-                            $textoOscuro = $brillo > 150;
-                        @endphp
+                <div class="grid grid-cols-2 gap-3">
+                    @if ($product->longevidad_horas)
+                        <div class="rounded-lg border border-[#D4AF37]/30 bg-white/[0.03] p-4 flex items-center gap-3">
+                            <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70">Longevidad</p>
+                                <p class="text-sm font-bold text-[#D4AF37]">{{ $product->longevidad_horas }} h</p>
+                            </div>
+                        </div>
+                    @endif
+                    @if ($product->estela)
+                        <div class="rounded-lg border border-[#D4AF37]/30 bg-white/[0.03] p-4 flex items-center gap-3">
+                            <svg class="w-6 h-6 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0M3 14c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/>
+                            </svg>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70">Estela</p>
+                                <p class="text-sm font-bold text-[#D4AF37]">{{ $product->estela }}</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
+        {{-- Pirámide Olfativa --}}
+        <div class="pd-piramide">
+            <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
+                Pirámide Olfativa
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="rounded-lg border border-t-2 border-t-[#D4AF37]/50 border-white/10 bg-white/[0.03] p-4 text-center">
+                    <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70 font-bold mb-2">Notas de Salida</p>
+                    <p class="text-sm text-gray-200 leading-relaxed">{{ $topNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                </div>
+                <div class="rounded-lg border border-t-2 border-t-[#D4AF37] border-white/10 bg-white/[0.03] p-4 text-center">
+                    <p class="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold mb-2">Notas de Corazón</p>
+                    <p class="text-sm text-gray-200 leading-relaxed">{{ $heartNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                </div>
+                <div class="rounded-lg border border-t-2 border-t-amber-800 border-white/10 bg-white/[0.03] p-4 text-center">
+                    <p class="text-[10px] uppercase tracking-widest text-amber-700 font-bold mb-2">Notas de Fondo</p>
+                    <p class="text-sm text-gray-200 leading-relaxed">{{ $baseNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Estaciones recomendadas --}}
+        @php
+            $estaciones = [
+                'temporada_invierno_pct'  => [
+                    'label' => 'Invierno',
+                    'color' => '#60A5FA',
+                    'icono' => 'M12 2v20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07',
+                ],
+                'temporada_primavera_pct' => [
+                    'label' => 'Primavera',
+                    'color' => '#4ADE80',
+                    'icono' => 'M12 10a2 2 0 100 4 2 2 0 000-4zM12 10V4M12 14v6M10 12H4m6 0h6',
+                ],
+                'temporada_verano_pct'    => [
+                    'label' => 'Verano',
+                    'color' => '#FACC15',
+                    'icono' => 'M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.06 16.94l-1.42 1.42m0-12.72l1.42 1.42M16.94 16.94l1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z',
+                ],
+                'temporada_otono_pct'     => [
+                    'label' => 'Otoño',
+                    'color' => '#FB923C',
+                    'icono' => 'M12 21c-4-2-7-6-7-11a9 9 0 0114-7c3 3 3 8 0 12-2 2-4 3-7 6zM12 21V9',
+                ],
+            ];
+        @endphp
+        @if (collect(array_keys($estaciones))->contains(fn ($campo) => ($product->{$campo} ?? 0) > 0))
+            <div class="pd-estaciones">
+                <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
+                    Estaciones
+                </h2>
+
+                <div class="grid grid-cols-2 gap-3">
+                    @foreach ($estaciones as $campo => $info)
+                        @php $activa = ($product->{$campo} ?? 0) > 0; @endphp
                         <div
-                            class="h-9 flex items-center rounded-r-full shadow-md shadow-black/40 transition-all duration-700"
-                            style="width: {{ max($chord->pivot->intensity, 30) }}%; min-width: 140px; background-color: {{ $chord->color }};"
+                            class="flex items-center justify-between gap-2 rounded-lg px-4 py-3 font-bold uppercase text-xs tracking-wide"
+                            style="{{ $activa
+                                ? 'background-color:' . $info['color'] . ';color:#000;'
+                                : 'background-color:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);' }}"
                         >
-                            <span class="w-full text-center {{ $textoOscuro ? 'text-black' : 'text-white' }} text-xs font-bold uppercase tracking-wide px-4 truncate">
-                                {{ $chord->name }}
+                            <span class="flex items-center gap-2">
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $info['icono'] }}"/>
+                                </svg>
+                                {{ $info['label'] }}
                             </span>
+                            @if ($activa)
+                                <span class="text-[11px] font-black">{{ $product->{$campo} }}%</span>
+                            @endif
                         </div>
                     @endforeach
                 </div>
             </div>
+        @endif
 
-            {{-- Pirámide Olfativa --}}
-            <div class="mb-8">
+        {{-- Uso Recomendado: proporción de uso de día vs de noche --}}
+        @if (! is_null($product->uso_dia_pct))
+            <div class="pd-uso">
                 <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
-                    Pirámide Olfativa
+                    Uso Recomendado
                 </h2>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="rounded-lg border border-t-2 border-t-[#D4AF37]/50 border-white/10 bg-white/[0.03] p-4 text-center">
-                        <p class="text-[10px] uppercase tracking-widest text-[#D4AF37]/70 font-bold mb-2">Notas de Salida</p>
-                        <p class="text-sm text-gray-200 leading-relaxed">{{ $topNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                <div class="flex rounded-full overflow-hidden border border-[#D4AF37]/40 shadow-[0_0_25px_rgba(212,175,55,0.2)]" style="height:52px;">
+                    <div
+                        class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#D4AF37] to-[#a9822f]"
+                        style="width: {{ max($product->uso_dia_pct, 15) }}%;"
+                    >
+                        <svg class="w-5 h-5 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.06 16.94l-1.42 1.42m0-12.72l1.42 1.42M16.94 16.94l1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        @if ($product->uso_dia_pct >= 25)
+                            <span class="text-xs font-black uppercase tracking-widest text-black">Día</span>
+                        @endif
                     </div>
-                    <div class="rounded-lg border border-t-2 border-t-[#D4AF37] border-white/10 bg-white/[0.03] p-4 text-center">
-                        <p class="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold mb-2">Notas de Corazón</p>
-                        <p class="text-sm text-gray-200 leading-relaxed">{{ $heartNotes->pluck('name')->implode(', ') ?: '—' }}</p>
-                    </div>
-                    <div class="rounded-lg border border-t-2 border-t-amber-800 border-white/10 bg-white/[0.03] p-4 text-center">
-                        <p class="text-[10px] uppercase tracking-widest text-amber-700 font-bold mb-2">Notas de Fondo</p>
-                        <p class="text-sm text-gray-200 leading-relaxed">{{ $baseNotes->pluck('name')->implode(', ') ?: '—' }}</p>
+                    <div
+                        class="flex items-center justify-center gap-2"
+                        style="width: {{ max(100 - $product->uso_dia_pct, 15) }}%; background: linear-gradient(90deg, #17172c, #05050a);"
+                    >
+                        @if ((100 - $product->uso_dia_pct) >= 25)
+                            <span class="text-xs font-black uppercase tracking-widest text-[#D4AF37]">Noche</span>
+                        @endif
+                        <svg class="w-5 h-5 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
                     </div>
                 </div>
             </div>
-
-            {{-- Uso Recomendado: proporción de uso de día vs de noche --}}
-            @if (! is_null($product->uso_dia_pct))
-                <div class="mb-8">
-                    <h2 class="text-xl font-semibold text-[#D4AF37] mb-4 uppercase tracking-wide">
-                        Uso Recomendado
-                    </h2>
-
-                    <div class="flex rounded-full overflow-hidden border border-[#D4AF37]/40 shadow-[0_0_25px_rgba(212,175,55,0.2)]" style="height:52px;">
-                        <div
-                            class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#D4AF37] to-[#a9822f]"
-                            style="width: {{ max($product->uso_dia_pct, 15) }}%;"
-                        >
-                            <svg class="w-5 h-5 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.06 16.94l-1.42 1.42m0-12.72l1.42 1.42M16.94 16.94l1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                            </svg>
-                            @if ($product->uso_dia_pct >= 25)
-                                <span class="text-xs font-black uppercase tracking-widest text-black">Día</span>
-                            @endif
-                        </div>
-                        <div
-                            class="flex items-center justify-center gap-2"
-                            style="width: {{ max(100 - $product->uso_dia_pct, 15) }}%; background: linear-gradient(90deg, #17172c, #05050a);"
-                        >
-                            @if ((100 - $product->uso_dia_pct) >= 25)
-                                <span class="text-xs font-black uppercase tracking-widest text-[#D4AF37]">Noche</span>
-                            @endif
-                            <svg class="w-5 h-5 text-[#D4AF37] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-        </div>
+        @endif
     </div>
 
     {{-- Fragancias que pueden gustarte --}}
