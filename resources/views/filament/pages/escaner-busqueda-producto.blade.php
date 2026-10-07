@@ -5,13 +5,33 @@
     directamente al método Livewire de la página (irABarcode) para que
     decida si redirige a editar el producto existente o a crear uno
     nuevo con ese código precargado.
+
+    La cámara NO se abre sola al abrir el modal: hay que tocar el
+    botón "Iniciar cámara". Los navegadores (sobre todo en celular)
+    bloquean getUserMedia() si no viene de un toque/clic directo del
+    usuario, y abrirla automáticamente desde x-init rompe esa cadena.
 --}}
 <div
     x-data="busquedaPorCodigoBarras()"
-    x-init="init()"
     wire:ignore.self
 >
-    <div :id="lectorId" style="width:100%; max-width:420px; margin:0 auto; border-radius:12px; overflow:hidden;"></div>
+    <div x-show="!mostrandoCamara" style="text-align:center; padding:24px 0;">
+        <button
+            type="button"
+            @click="abrir()"
+            style="display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:9999px; border:1px solid #D4AF37; color:#D4AF37; background:transparent; font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer;"
+        >
+            <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2M7 12h10" />
+            </svg>
+            Iniciar cámara
+        </button>
+    </div>
+
+    <div x-show="mostrandoCamara" x-cloak>
+        <div :id="lectorId" style="width:100%; max-width:420px; margin:0 auto; border-radius:12px; overflow:hidden;"></div>
+    </div>
+
     <p x-text="mensaje" style="font-size:13px; margin-top:14px; text-align:center;"></p>
 </div>
 
@@ -20,13 +40,10 @@
         function busquedaPorCodigoBarras() {
             return {
                 lectorId: 'lector-busqueda-producto',
-                mensaje: 'Apunta la cámara al código de barras…',
+                mensaje: '',
+                mostrandoCamara: false,
                 lector: null,
                 procesado: false,
-
-                init() {
-                    this.$nextTick(() => this.abrir());
-                },
 
                 cargarLibreria() {
                     return new Promise((resolve, reject) => {
@@ -50,6 +67,7 @@
                 },
 
                 async abrir() {
+                    this.mostrandoCamara = true;
                     this.mensaje = 'Apunta la cámara al código de barras…';
 
                     try {
@@ -90,6 +108,7 @@
                             () => {}
                         );
                     } catch (e) {
+                        this.mostrandoCamara = false;
                         this.mensaje = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
                     }
                 },
