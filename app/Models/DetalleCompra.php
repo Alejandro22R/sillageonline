@@ -11,6 +11,7 @@ class DetalleCompra extends Model
 
     protected $fillable = [
         'compra_id',
+        'codigo_barras',
         'nombre_perfume',
         'marca_perfume',
         'mililitros',

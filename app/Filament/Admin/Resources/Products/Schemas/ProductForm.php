@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
+use App\Filament\Forms\Components\BarcodeScannerInput;
 use App\Models\DetalleCompra;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
@@ -15,6 +16,14 @@ class ProductForm
     {
         return $form
             ->schema([
+                BarcodeScannerInput::make('codigo_barras')
+                    ->label('Código de Barras')
+                    ->scannerPlaceholder('Escanea o escribe el código de barras')
+                    ->unique(ignoreRecord: true)
+                    ->default(fn () => request()->query('codigo_barras'))
+                    ->helperText('Se usa para identificar el perfume al escanearlo en Compras o aquí mismo.')
+                    ->columnSpanFull(),
+
                 Select::make('name')
                     ->label('Seleccionar Perfume del Inventario')
                     ->options(function () {

@@ -18,6 +18,11 @@ class DetalleComprasTable
                 TextColumn::make('compra.proveedor.nombre')
                     ->label('Compra a Proveedor')
                     ->searchable(),
+                TextColumn::make('codigo_barras')
+                    ->label('Código de Barras')
+                    ->searchable()
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('nombre_perfume')
                     ->searchable(),
                 TextColumn::make('marca_perfume')

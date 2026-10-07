@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Compras\Schemas;
 
+use App\Filament\Forms\Components\BarcodeScannerInput;
+use App\Models\Product;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -28,10 +30,30 @@ class CompraForm
                     ->default(now())
                     ->required(),
 
+                BarcodeScannerInput::make('escanear_codigo')
+                    ->label('Escanear perfume')
+                    ->scannerPlaceholder('Escanea el código de barras de la caja')
+                    ->helperText('Cada vez que escanees el mismo código, se suma 1 a la cantidad de esa línea en vez de duplicarla.')
+                    ->dehydrated(false)
+                    ->live()
+                    ->afterStateUpdated(function ($state, Get $get, Set $set) {
+                        if (filled($state)) {
+                            self::procesarCodigoEscaneado($state, $get, $set);
+                        }
+                        $set('escanear_codigo', null);
+                    })
+                    ->columnSpanFull(),
+
                 Repeater::make('detalles')
                     ->relationship('detalles')
                     ->label('Productos de la Factura')
                     ->schema([
+                        TextInput::make('codigo_barras')
+                            ->label('Código de Barras')
+                            ->readonly()
+                            ->placeholder('—')
+                            ->dehydrated(),
+
                         TextInput::make('nombre_perfume')
                             ->label('Nombre del Perfume')
                             ->required(),
@@ -110,6 +132,66 @@ class CompraForm
 
         // 3. Forzamos al campo total_compra (fuera del repeater) a actualizarse ya mismo
         $set('../../total_compra', number_format($total, 2, '.', ''));
+    }
+
+    /**
+     * Procesa un código recién escaneado dentro del repeater "detalles":
+     * si ya hay una línea con ese mismo código, le suma 1 a la cantidad
+     * (varias unidades del mismo perfume); si no, agrega una línea
+     * nueva, completando nombre/marca/costo desde el producto del
+     * catálogo si ya existe uno con ese código de barras.
+     */
+    protected static function procesarCodigoEscaneado(string $codigo, Get $get, Set $set): void
+    {
+        $detalles = $get('detalles') ?? [];
+
+        foreach ($detalles as $key => $detalle) {
+            if (($detalle['codigo_barras'] ?? null) === $codigo) {
+                $nuevaCantidad = (float) ($detalle['cantidad'] ?? 0) + 1;
+                $costo = (float) ($detalle['costo_unitario'] ?? 0);
+
+                $detalles[$key]['cantidad'] = $nuevaCantidad;
+                $detalles[$key]['subtotal'] = number_format($nuevaCantidad * $costo, 2, '.', '');
+
+                $set('detalles', $detalles);
+                self::recalcularTotalDesdeDetalles($detalles, $set);
+
+                return;
+            }
+        }
+
+        $producto = Product::where('codigo_barras', $codigo)->first();
+        $costoInicial = $producto->wholesale_price ?? 0;
+
+        $detalles[] = [
+            'codigo_barras'  => $codigo,
+            'nombre_perfume' => $producto->name ?? '',
+            'marca_perfume'  => $producto->marca_perfume ?? '',
+            'mililitros'     => '',
+            'cantidad'       => 1,
+            'costo_unitario' => $costoInicial,
+            'subtotal'       => number_format($costoInicial, 2, '.', ''),
+        ];
+
+        $set('detalles', $detalles);
+        self::recalcularTotalDesdeDetalles($detalles, $set);
+    }
+
+    /**
+     * Igual que actualizarTotalGeneral(), pero a partir de un arreglo de
+     * detalles ya en mano (en vez de leerlo de nuevo con $get), porque
+     * dentro de procesarCodigoEscaneado() el $get del repeater todavía
+     * no refleja el $set que se acaba de hacer en esta misma pasada.
+     */
+    protected static function recalcularTotalDesdeDetalles(array $detalles, Set $set): void
+    {
+        $total = 0;
+
+        foreach ($detalles as $detalle) {
+            $total += (float) ($detalle['subtotal'] ?? 0);
+        }
+
+        $set('total_compra', number_format($total, 2, '.', ''));
     }
 
     protected static function actualizarTotalGeneral(Get $get, Set $set): void

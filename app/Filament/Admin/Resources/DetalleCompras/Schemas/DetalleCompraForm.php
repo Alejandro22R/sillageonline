@@ -15,6 +15,9 @@ class DetalleCompraForm
                 Select::make('compra_id')
                     ->relationship('compra', 'id')
                     ->required(),
+                TextInput::make('codigo_barras')
+                    ->label('Código de Barras')
+                    ->placeholder('—'),
                 TextInput::make('nombre_perfume')
                     ->required(),
                 TextInput::make('marca_perfume')

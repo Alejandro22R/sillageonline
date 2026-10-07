@@ -17,6 +17,11 @@ class ProductsTable
     {
         return $table
             ->columns([
+                TextColumn::make('codigo_barras')
+                    ->label('Código de Barras')
+                    ->searchable()
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('marca_perfume')
                     ->searchable(),
                 TextColumn::make('name')
