@@ -1,9 +1,87 @@
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
     <div
-        x-data="barcodeScannerField({
+        x-data="{
             state: $wire.entangle('{{ $getStatePath() }}').live,
             lectorId: '{{ $getLectorId() }}',
-        })"
+            mostrando: false,
+            mensaje: 'Apunta la cámara al código de barras…',
+            lector: null,
+
+            cargarLibreria() {
+                return new Promise((resolve, reject) => {
+                    if (window.Html5Qrcode) {
+                        resolve();
+                        return;
+                    }
+                    const existente = document.getElementById('html5-qrcode-lib');
+                    if (existente) {
+                        existente.addEventListener('load', () => resolve());
+                        existente.addEventListener('error', reject);
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.id = 'html5-qrcode-lib';
+                    script.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+                    script.onload = () => resolve();
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            },
+
+            async abrir() {
+                this.mostrando = true;
+                this.mensaje = 'Apunta la cámara al código de barras…';
+
+                try {
+                    await this.cargarLibreria();
+                } catch (e) {
+                    this.mensaje = 'No se pudo cargar el lector. Revisa tu conexión a internet.';
+                    return;
+                }
+
+                await this.$nextTick();
+
+                try {
+                    this.lector = new window.Html5Qrcode(this.lectorId, {
+                        formatsToSupport: [
+                            Html5QrcodeSupportedFormats.EAN_13,
+                            Html5QrcodeSupportedFormats.EAN_8,
+                            Html5QrcodeSupportedFormats.UPC_A,
+                            Html5QrcodeSupportedFormats.UPC_E,
+                            Html5QrcodeSupportedFormats.CODE_128,
+                            Html5QrcodeSupportedFormats.CODE_39,
+                            Html5QrcodeSupportedFormats.ITF,
+                            Html5QrcodeSupportedFormats.CODABAR,
+                            Html5QrcodeSupportedFormats.QR_CODE,
+                        ],
+                        verbose: false,
+                    });
+
+                    await this.lector.start(
+                        { facingMode: 'environment' },
+                        { fps: 10, qrbox: { width: 260, height: 150 } },
+                        (decodedText) => {
+                            this.state = decodedText;
+                            this.cerrar();
+                        },
+                        () => {}
+                    );
+                } catch (e) {
+                    this.mensaje = 'No se pudo acceder a la cámara: ' + (e && e.message ? e.message : e);
+                }
+            },
+
+            cerrar() {
+                if (this.lector) {
+                    const lectorActual = this.lector;
+                    this.lector = null;
+                    lectorActual.stop()
+                        .then(() => lectorActual.clear())
+                        .catch(() => {});
+                }
+                this.mostrando = false;
+            },
+        }"
         wire:ignore.self
     >
         <div style="display:flex; gap:8px; align-items:center;">
@@ -46,94 +124,3 @@
         </div>
     </div>
 </x-dynamic-component>
-
-@once
-    <script>
-        function barcodeScannerField({ state, lectorId }) {
-            return {
-                state,
-                lectorId,
-                mostrando: false,
-                mensaje: 'Apunta la cámara al código de barras…',
-                lector: null,
-
-                cargarLibreria() {
-                    return new Promise((resolve, reject) => {
-                        if (window.Html5Qrcode) {
-                            resolve();
-                            return;
-                        }
-                        const existente = document.getElementById('html5-qrcode-lib');
-                        if (existente) {
-                            existente.addEventListener('load', () => resolve());
-                            existente.addEventListener('error', reject);
-                            return;
-                        }
-                        const script = document.createElement('script');
-                        script.id = 'html5-qrcode-lib';
-                        script.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
-                        script.onload = () => resolve();
-                        script.onerror = reject;
-                        document.head.appendChild(script);
-                    });
-                },
-
-                async abrir() {
-                    this.mostrando = true;
-                    this.mensaje = 'Apunta la cámara al código de barras…';
-
-                    try {
-                        await this.cargarLibreria();
-                    } catch (e) {
-                        this.mensaje = 'No se pudo cargar el lector. Revisa tu conexión a internet.';
-                        return;
-                    }
-
-                    await this.$nextTick();
-
-                    try {
-                        this.lector = new window.Html5Qrcode(this.lectorId, {
-                            formatsToSupport: [
-                                Html5QrcodeSupportedFormats.EAN_13,
-                                Html5QrcodeSupportedFormats.EAN_8,
-                                Html5QrcodeSupportedFormats.UPC_A,
-                                Html5QrcodeSupportedFormats.UPC_E,
-                                Html5QrcodeSupportedFormats.CODE_128,
-                                Html5QrcodeSupportedFormats.CODE_39,
-                                Html5QrcodeSupportedFormats.ITF,
-                                Html5QrcodeSupportedFormats.CODABAR,
-                                Html5QrcodeSupportedFormats.QR_CODE,
-                            ],
-                            verbose: false,
-                        });
-
-                        await this.lector.start(
-                            { facingMode: 'environment' },
-                            { fps: 10, qrbox: { width: 260, height: 150 } },
-                            (decodedText) => {
-                                this.state = decodedText;
-                                this.cerrar();
-                            },
-                            () => {
-                                // Se dispara en cada frame sin detección: no hacemos nada.
-                            }
-                        );
-                    } catch (e) {
-                        this.mensaje = 'No se pudo acceder a la cámara. Revisa los permisos del navegador.';
-                    }
-                },
-
-                cerrar() {
-                    if (this.lector) {
-                        const lectorActual = this.lector;
-                        this.lector = null;
-                        lectorActual.stop()
-                            .then(() => lectorActual.clear())
-                            .catch(() => {});
-                    }
-                    this.mostrando = false;
-                },
-            };
-        }
-    </script>
-@endonce
