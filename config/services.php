@@ -41,4 +41,8 @@ return [
         'username'     => env('IG_USERNAME'),
     ],
 
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+    ],
+
 ];
