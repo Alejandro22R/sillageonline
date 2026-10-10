@@ -2,32 +2,50 @@
 
     <style>
         @keyframes sillageGiroLento {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to   { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes sillageGiroLentoInverso {
+            from { transform: translate(-50%, -50%) rotate(360deg); }
+            to   { transform: translate(-50%, -50%) rotate(0deg); }
         }
         @keyframes sillagePulso {
-            0%, 100% { opacity: .25; transform: scale(1); }
-            50%      { opacity: .5;  transform: scale(1.15); }
+            0%, 100% { opacity: .2; transform: scale(1); }
+            50%      { opacity: .45; transform: scale(1.15); }
+        }
+        @keyframes sillageResplandor {
+            0%, 100% { opacity: .35; transform: translate(-50%, -50%) scale(1); }
+            50%      { opacity: .7;  transform: translate(-50%, -50%) scale(1.1); }
         }
         @keyframes sillageLogoEntrada {
             from { opacity: 0; transform: scale(.85); }
             to   { opacity: 1; transform: scale(1); }
         }
-        @keyframes sillageBarra {
-            from { width: 0%; }
-            to   { width: 100%; }
-        }
         .sillage-anillo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border-radius: 9999px;
             animation: sillageGiroLento 14s linear infinite;
+        }
+        .sillage-anillo-inverso {
+            animation-name: sillageGiroLentoInverso;
+            animation-duration: 10s;
+        }
+        .sillage-resplandor {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border-radius: 9999px;
+            background: #D4AF37;
+            filter: blur(40px);
+            animation: sillageResplandor 2.5s ease-in-out infinite;
         }
         .sillage-destello-carga {
             animation: sillagePulso 3.5s ease-in-out infinite;
         }
         .sillage-logo-carga {
             animation: sillageLogoEntrada 1s ease-out both;
-        }
-        .sillage-barra-carga {
-            animation: sillageBarra 1.8s ease-in-out forwards;
         }
     </style>
 
@@ -54,19 +72,19 @@
         x-transition:leave-end="opacity-0"
         style="position:fixed; inset:0; z-index:9999; background:#050505; display:flex; align-items:center; justify-content:center; overflow:hidden;"
     >
-        {{-- Destellos dorados en movimiento --}}
+        {{-- Destellos dorados en las esquinas --}}
         <div class="sillage-destello-carga" style="position:absolute; top:-10%; left:-10%; width:450px; height:450px; background:#D4AF37; opacity:.2; border-radius:9999px; filter:blur(140px);"></div>
         <div class="sillage-destello-carga" style="position:absolute; bottom:-10%; right:-10%; width:450px; height:450px; background:#D4AF37; opacity:.2; border-radius:9999px; filter:blur(140px); animation-delay:1.2s;"></div>
 
-        {{-- Anillo dorado girando detrás del logo --}}
-        <div class="sillage-anillo" style="position:absolute; width:260px; height:260px; border-radius:9999px; border:1px solid rgba(212,175,55,.35); border-top-color:#D4AF37;"></div>
-        <div class="sillage-anillo" style="position:absolute; width:200px; height:200px; border-radius:9999px; border:1px solid rgba(212,175,55,.2); border-bottom-color:#D4AF37; animation-direction:reverse; animation-duration:10s;"></div>
+        {{-- Centro: resplandor + anillos + logo, todo centrado en el mismo punto --}}
+        <div style="position:relative; width:280px; height:280px; display:flex; align-items:center; justify-content:center;">
+            <div class="sillage-resplandor" style="width:160px; height:160px;"></div>
+            <div class="sillage-anillo" style="width:260px; height:260px; border:1px solid rgba(212,175,55,.3); border-top-color:#D4AF37;"></div>
+            <div class="sillage-anillo sillage-anillo-inverso" style="width:210px; height:210px; border:1px solid rgba(212,175,55,.18); border-bottom-color:#D4AF37;"></div>
 
-        <div class="sillage-logo-carga" style="position:relative; display:flex; flex-direction:column; align-items:center;">
-            <img src="{{ asset('img/sillage.png') }}" alt="Sillage Parfums" style="width:110px; height:auto; object-fit:contain;">
-            <p style="margin-top:18px; color:#D4AF37; font-size:11px; letter-spacing:0.4em; text-transform:uppercase; font-weight:700;">Sillage Parfums</p>
-            <div style="margin-top:16px; width:160px; height:2px; background:rgba(212,175,55,.15); border-radius:9999px; overflow:hidden;">
-                <div class="sillage-barra-carga" style="height:100%; background:#D4AF37;"></div>
+            <div class="sillage-logo-carga" style="position:relative; display:flex; flex-direction:column; align-items:center;">
+                <img src="{{ asset('img/sillage.png') }}" alt="Sillage Parfums" style="width:100px; height:auto; object-fit:contain;">
+                <p style="margin-top:16px; color:#D4AF37; font-size:11px; letter-spacing:0.4em; text-transform:uppercase; font-weight:700; white-space:nowrap;">Sillage Parfums</p>
             </div>
         </div>
     </div>
