@@ -70,14 +70,14 @@
         x-transition:leave="transition ease-in duration-500"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        style="position:fixed; inset:0; z-index:9999; background:#050505; display:flex; align-items:center; justify-content:center; overflow:hidden;"
+        style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999; background:#050505; overflow:hidden;"
     >
         {{-- Destellos dorados en las esquinas --}}
         <div class="sillage-destello-carga" style="position:absolute; top:-10%; left:-10%; width:450px; height:450px; background:#D4AF37; opacity:.2; border-radius:9999px; filter:blur(140px);"></div>
         <div class="sillage-destello-carga" style="position:absolute; bottom:-10%; right:-10%; width:450px; height:450px; background:#D4AF37; opacity:.2; border-radius:9999px; filter:blur(140px); animation-delay:1.2s;"></div>
 
-        {{-- Centro: resplandor + anillos + logo, todo centrado en el mismo punto --}}
-        <div style="position:relative; width:280px; height:280px; display:flex; align-items:center; justify-content:center;">
+        {{-- Centro: resplandor + anillos + logo, todo centrado en el mismo punto de la pantalla (posicionado de forma absoluta para que no dependa de que el contenedor flex funcione) --}}
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:280px; height:280px; display:flex; align-items:center; justify-content:center;">
             <div class="sillage-resplandor" style="width:160px; height:160px;"></div>
             <div class="sillage-anillo" style="width:260px; height:260px; border:1px solid rgba(212,175,55,.3); border-top-color:#D4AF37;"></div>
             <div class="sillage-anillo sillage-anillo-inverso" style="width:210px; height:210px; border:1px solid rgba(212,175,55,.18); border-bottom-color:#D4AF37;"></div>
