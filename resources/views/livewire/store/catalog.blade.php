@@ -1,5 +1,90 @@
 <div class="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#D4AF37] selection:text-black overflow-x-hidden relative">
 
+    <style>
+        @keyframes sillageGiroLento {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes sillagePulso {
+            0%, 100% { opacity: .25; transform: scale(1); }
+            50%      { opacity: .5;  transform: scale(1.15); }
+        }
+        @keyframes sillageLogoEntrada {
+            from { opacity: 0; transform: scale(.85); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes sillageBarra {
+            from { width: 0%; }
+            to   { width: 100%; }
+        }
+        .sillage-anillo {
+            animation: sillageGiroLento 14s linear infinite;
+        }
+        .sillage-destello-carga {
+            animation: sillagePulso 3.5s ease-in-out infinite;
+        }
+        .sillage-logo-carga {
+            animation: sillageLogoEntrada 1s ease-out both;
+        }
+        .sillage-barra-carga {
+            animation: sillageBarra 1.8s ease-in-out forwards;
+        }
+    </style>
+
+    {{-- Pantalla de carga: solo la primera vez que se entra al catálogo en esta sesión del navegador --}}
+    <div
+        x-data="{
+            mostrar: true,
+            init() {
+                try {
+                    if (sessionStorage.getItem('sillage-catalogo-visto')) {
+                        this.mostrar = false;
+                        return;
+                    }
+                    sessionStorage.setItem('sillage-catalogo-visto', '1');
+                } catch (e) {
+                    // Si el navegador bloquea sessionStorage (modo privado, etc.), igual mostramos la animación una vez.
+                }
+                setTimeout(() => { this.mostrar = false }, 2000);
+            }
+        }"
+        x-show="mostrar"
+        x-transition:leave="transition ease-in duration-500"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        style="position:fixed; inset:0; z-index:9999; background:#050505; display:flex; align-items:center; justify-content:center; overflow:hidden;"
+    >
+        {{-- Destellos dorados en movimiento --}}
+        <div class="sillage-destello-carga" style="position:absolute; top:-10%; left:-10%; width:450px; height:450px; background:#D4AF37; opacity:.2; border-radius:9999px; filter:blur(140px);"></div>
+        <div class="sillage-destello-carga" style="position:absolute; bottom:-10%; right:-10%; width:450px; height:450px; background:#D4AF37; opacity:.2; border-radius:9999px; filter:blur(140px); animation-delay:1.2s;"></div>
+
+        {{-- Anillo dorado girando detrás del logo --}}
+        <div class="sillage-anillo" style="position:absolute; width:260px; height:260px; border-radius:9999px; border:1px solid rgba(212,175,55,.35); border-top-color:#D4AF37;"></div>
+        <div class="sillage-anillo" style="position:absolute; width:200px; height:200px; border-radius:9999px; border:1px solid rgba(212,175,55,.2); border-bottom-color:#D4AF37; animation-direction:reverse; animation-duration:10s;"></div>
+
+        <div class="sillage-logo-carga" style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img src="{{ asset('img/sillage.png') }}" alt="Sillage Parfums" style="width:110px; height:auto; object-fit:contain;">
+            <p style="margin-top:18px; color:#D4AF37; font-size:11px; letter-spacing:0.4em; text-transform:uppercase; font-weight:700;">Sillage Parfums</p>
+            <div style="margin-top:16px; width:160px; height:2px; background:rgba(212,175,55,.15); border-radius:9999px; overflow:hidden;">
+                <div class="sillage-barra-carga" style="height:100%; background:#D4AF37;"></div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Botón flotante "volver arriba" --}}
+    <button
+        type="button"
+        x-data="{ visible: false }"
+        x-init="window.addEventListener('scroll', () => { visible = window.scrollY > 600 })"
+        x-show="visible"
+        x-transition.opacity
+        @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+        style="position:fixed; bottom:24px; right:20px; z-index:50; width:48px; height:48px; border-radius:9999px; background:#0A0A0A; border:1px solid rgba(212,175,55,.5); color:#D4AF37; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,.6); cursor:pointer;"
+        aria-label="Volver arriba"
+    >
+        <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+    </button>
+
     <livewire:store.header />
 
     <div class="absolute top-0 left-[-10%] w-[500px] h-[500px] bg-[#D4AF37]/20 rounded-full blur-[150px] pointer-events-none"></div>
@@ -54,7 +139,7 @@
                 <div x-ref="carouselExclusiva" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scroll pb-10">
                     @foreach($exclusivos as $product)
                         <div class="min-w-[280px] md:min-w-[320px] snap-center group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2">
-                            <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
+                            <a href="{{ route('store.product', $product->slug) }}" class="block">
                                 <div class="w-full overflow-hidden relative bg-[#111]" style="aspect-ratio: 3 / 4;">
                                     @if($product->image)
                                         <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
@@ -76,7 +161,7 @@
                                 <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#D4AF37]/90 mb-1 truncate">
                                     {{ $product->marca_perfume ?? 'Sillage' }}
                                 </p>
-                                <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="hover:text-[#D4AF37] transition-colors">
+                                <a href="{{ route('store.product', $product->slug) }}" class="hover:text-[#D4AF37] transition-colors">
                                     <h3 class="text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                 </a>
                                 <p class="text-xl font-light text-[#D4AF37] mt-2 mb-6">${{ number_format($product->retail_price, 2) }}</p>
@@ -117,7 +202,7 @@
                 <div x-ref="carouselOfertas" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scroll pb-10">
                     @foreach($ofertas as $product)
                         <div class="min-w-[280px] md:min-w-[320px] snap-center group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-red-600/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2">
-                            <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
+                            <a href="{{ route('store.product', $product->slug) }}" class="block">
                                 <div class="w-full overflow-hidden relative bg-[#111]" style="aspect-ratio: 3 / 4;">
                                     @if($product->image)
                                         <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
@@ -139,7 +224,7 @@
                                 <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#D4AF37]/90 mb-1 truncate">
                                     {{ $product->marca_perfume ?? 'Sillage' }}
                                 </p>
-                                <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="hover:text-red-500 transition-colors">
+                                <a href="{{ route('store.product', $product->slug) }}" class="hover:text-red-500 transition-colors">
                                     <h3 class="text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                 </a>
 
@@ -178,6 +263,14 @@
                     <span class="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 mr-1 sm:mr-2">Ordenar por</span>
 
                     <button
+                        wire:click="setSort('marca')"
+                        wire:loading.attr="disabled"
+                        class="px-4 sm:px-5 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 {{ $sortBy === 'marca' ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-transparent text-gray-400 border-white/10 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]' }}"
+                    >
+                        Marca
+                    </button>
+
+                    <button
                         wire:click="setSort('name')"
                         wire:loading.attr="disabled"
                         class="px-4 sm:px-5 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 {{ $sortBy === 'name' ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-transparent text-gray-400 border-white/10 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]' }}"
@@ -186,11 +279,19 @@
                     </button>
 
                     <button
-                        wire:click="setSort('marca')"
+                        wire:click="setSort('precio_asc')"
                         wire:loading.attr="disabled"
-                        class="px-4 sm:px-5 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 {{ $sortBy === 'marca' ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-transparent text-gray-400 border-white/10 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]' }}"
+                        class="px-4 sm:px-5 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 {{ $sortBy === 'precio_asc' ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-transparent text-gray-400 border-white/10 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]' }}"
                     >
-                        Marca
+                        Precio: Menor a Mayor
+                    </button>
+
+                    <button
+                        wire:click="setSort('precio_desc')"
+                        wire:loading.attr="disabled"
+                        class="px-4 sm:px-5 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border transition-all duration-300 {{ $sortBy === 'precio_desc' ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-transparent text-gray-400 border-white/10 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]' }}"
+                    >
+                        Precio: Mayor a Menor
                     </button>
                 </div>
 
@@ -206,7 +307,7 @@
                             style="animation-delay: {{ min($loop->index * 40, 400) }}ms"
                         >
 
-                            <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="block">
+                            <a href="{{ route('store.product', $product->slug) }}" class="block">
                                 <div class="w-full overflow-hidden relative bg-[#111]" style="aspect-ratio: 3 / 4;">
                                     @if($product->image)
                                         <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100 {{ $product->stock <= 0 ? 'grayscale' : '' }}">
@@ -233,7 +334,7 @@
                                 <p class="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#D4AF37]/90 mb-0.5 sm:mb-1 truncate">
                                     {{ $product->marca_perfume ?? 'Sillage' }}
                                 </p>
-                                <a href="{{ route('store.product', $product->slug) }}" wire:navigate class="hover:text-[#D4AF37] transition-colors">
+                                <a href="{{ route('store.product', $product->slug) }}" class="hover:text-[#D4AF37] transition-colors">
                                     <h3 class="text-sm sm:text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                 </a>
 

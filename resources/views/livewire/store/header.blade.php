@@ -45,7 +45,7 @@
             <div class="flex items-center justify-between h-20 gap-2 sm:gap-4">
 
                 <div class="flex-none flex items-center">
-                    <a href="/" wire:navigate class="flex items-center gap-1.5 sm:gap-3 group">
+                    <a href="/" class="flex items-center gap-1.5 sm:gap-3 group">
                         <img src="{{ asset('img/sillage.png') }}"
                              alt="Sillage Logo"
                              class="h-8 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
@@ -83,7 +83,7 @@
                                 @if($searchResults->count() > 0)
                                     <div style="max-height:60vh; overflow-y:auto; padding:12px;">
                                         @foreach($searchResults as $result)
-                                            <a href="{{ route('store.product', $result->slug) }}" wire:navigate class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-colors group">
+                                            <a href="{{ route('store.product', $result->slug) }}" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-colors group">
                                                 <div class="w-12 h-12 rounded bg-[#111] border border-white/10 overflow-hidden flex-shrink-0">
                                                     @if($result->image)
                                                         <img src="{{ \Illuminate\Support\Facades\Storage::url($result->image) }}" class="w-full h-full object-cover">

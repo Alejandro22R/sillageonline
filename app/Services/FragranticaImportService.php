@@ -9,13 +9,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
-/**
- * Extrae el perfil olfativo de un perfume (acordes, pirámide, longevidad,
- * estela, uso día/noche y estaciones) a partir de una captura de pantalla
- * o de la URL de una ficha tipo Fragrantica, usando la API de Claude, y
- * lo aplica directamente al producto (creando/vinculando Acordes y Notas
- * si hace falta) para no tener que cargarlo todo a mano.
- */
+
 class FragranticaImportService
 {
     protected Client $client;
