@@ -28,19 +28,6 @@ class CuotaObserver
 
     private function sincronizarVenta(Cuota $cuota): void
     {
-        $venta = $cuota->venta;
-
-        if (! $venta) {
-            return;
-        }
-
-        $totalPagado = (float) $venta->cuotas()->sum('monto_cuota');
-        $nuevoEstado = $totalPagado >= (float) $venta->total_venta && $totalPagado > 0
-            ? 'pagado'
-            : 'pendiente';
-
-        if ($venta->estado_pago !== $nuevoEstado) {
-            $venta->forceFill(['estado_pago' => $nuevoEstado])->save();
-        }
+        $cuota->venta?->sincronizarEstadoPago();
     }
 }

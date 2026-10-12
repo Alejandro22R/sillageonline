@@ -72,4 +72,24 @@ class Venta extends Model
     {
         return $this->estado_pago === 'pagado';
     }
+
+    /**
+     * Recalcula estado_pago comparando lo abonado (cuotas) contra el total
+     * ACTUAL de la venta. Se usa tanto al guardar/borrar un abono
+     * (CuotaObserver) como al editar la venta (EditVenta), ya que editar
+     * los productos de una venta puede cambiar total_venta y dejar
+     * desactualizado el estado (ej. una venta marcada "pagado" que, tras
+     * cambiarle el perfume por uno más caro, ya no cubre el nuevo total).
+     */
+    public function sincronizarEstadoPago(): void
+    {
+        $totalPagado = (float) $this->cuotas()->sum('monto_cuota');
+        $nuevoEstado = $totalPagado >= (float) $this->total_venta && $totalPagado > 0
+            ? 'pagado'
+            : 'pendiente';
+
+        if ($this->estado_pago !== $nuevoEstado) {
+            $this->forceFill(['estado_pago' => $nuevoEstado])->save();
+        }
+    }
 }
