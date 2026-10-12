@@ -39,7 +39,7 @@ class VentaForm
                         TextInput::make('cedula')->label('Cédula / Identificación')->maxLength(50),
                         TextInput::make('telefono')->label('Teléfono')->tel()->maxLength(50),
                         TextInput::make('correo')->label('Correo Electrónico')->email()->maxLength(255),
-                        Select::make('genero')->label('Género')->options(['Hombre' => 'Hombre', 'Mujer' => 'Mujer']),
+                        Select::make('genero')->label('Género')->required()->options(['Hombre' => 'Hombre', 'Mujer' => 'Mujer']),
                         TextInput::make('direccion')->label('Dirección')->maxLength(505),
                     ]),
 
@@ -75,7 +75,7 @@ class VentaForm
                             ->live()
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
                                 self::calcularPreciosItem($set, $get, $state);
-                                self::actualizarGranTotal($get, $set);
+                                self::actualizarGranTotal($get, $set, isInsideRepeater: true);
                             })
                             ->columnSpan(4),
 
@@ -95,7 +95,7 @@ class VentaForm
                             })
                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
                                 self::calcularPreciosItem($set, $get, $get('product_id'));
-                                self::actualizarGranTotal($get, $set);
+                                self::actualizarGranTotal($get, $set, isInsideRepeater: true);
                             })
                             ->columnSpan(2),
 
@@ -128,7 +128,7 @@ class VentaForm
                                 if (!empty($get('product_id'))) {
                                     self::calcularPreciosItem($set, $get, $get('product_id'));
                                 }
-                                self::actualizarGranTotal($get, $set);
+                                self::actualizarGranTotal($get, $set, isInsideRepeater: true);
                             })
                             ->columnSpan(12),
                     ])
@@ -140,7 +140,7 @@ class VentaForm
                         self::actualizarGranTotal($get, $set);
                     }),
 
-                // --- NUEVO: Opción global de recargo de $5 por Pago Móvil (aparece fuera del repeater) ---
+                // --- Opción global de recargo de $5 por Pago Móvil ---
                 Select::make('recargo_pago_movil_global')
                     ->label('¿Desea sumarle los $5 adicionales por pago en Bs (Pago Móvil) al total?')
                     ->options([
@@ -151,7 +151,6 @@ class VentaForm
                     ->required()
                     ->visible(function (Get $get) {
                         $detalles = $get('detalles') ?? [];
-                        // Revisa si al menos uno de los productos añadidos tiene 'Pago Movil' seleccionado
                         foreach ($detalles as $item) {
                             $metodos = $item['metodo_pago'] ?? [];
                             if (is_array($metodos) && in_array('Pago Movil', $metodos)) {
@@ -211,21 +210,25 @@ class VentaForm
         }
     }
 
-    public static function actualizarGranTotal(Get $get, Set $set): void
+    public static function actualizarGranTotal(Get $get, Set $set, bool $isInsideRepeater = false): void
     {
-        $detalles = $get('detalles') ?? [];
+        // Si estamos dentro del repeater, usamos '../../' para salir a la raíz del formulario
+        $prefix = $isInsideRepeater ? '../../' : '';
+
+        $detalles = $get($prefix . 'detalles') ?? [];
         $totalVenta = 0;
 
         foreach ($detalles as $item) {
             $totalVenta += (float) ($item['subtotal'] ?? 0);
         }
 
-        // Si se seleccionó "Sí" en el recargo global, se le suman los $5 al total acumulado
-        $recargoGlobal = $get('recargo_pago_movil_global') ?? 'No';
+        // Si se seleccionó "Sí" en el recargo global, se le suman los $5
+        $recargoGlobal = $get($prefix . 'recargo_pago_movil_global') ?? 'No';
         if ($recargoGlobal === 'Si' && $totalVenta > 0) {
             $totalVenta += 5.0;
         }
 
-        $set('total_venta', $totalVenta);
+        // Asignamos el valor directamente al campo raíz
+        $set($prefix . 'total_venta', $totalVenta);
     }
 }
