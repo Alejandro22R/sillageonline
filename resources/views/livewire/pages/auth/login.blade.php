@@ -5,7 +5,11 @@ use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-/**
+new #[Layout('layouts.guest')] class extends Component
+{
+    public LoginForm $form;
+
+    /**
      * Handle an incoming authentication request.
      */
     public function login(): void
@@ -16,13 +20,11 @@ use Livewire\Volt\Component;
 
         Session::regenerate();
 
-        // Limpia cualquier URL previa guardada en la sesión
         session()->forget('url.intended');
 
-        // Redirige directamente al panel de Filament
         $this->redirect('/admin', navigate: false);
-    } ?>
-
+    }
+}; ?>
 <div>
     <div style="text-align: center !important; width: 100% !important; margin-bottom: 2rem !important; display: flex !important; flex-direction: column !important; align-items: center !important;">
 
