@@ -5,20 +5,15 @@ use App\Livewire\Store\Catalog;
 use App\Livewire\Admin\Giveaway;
 use App\Livewire\Store\ProductDetail;
 
-
 Route::get('/store/{slug}', ProductDetail::class)->name('store.product');
 
 Route::get('/', Catalog::class);
 
 Route::passkeys();
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
+// Redirige /dashboard al panel de Filament manteniendo el nombre de ruta
+// para que el login de Breeze no falle al buscar route('dashboard')
+Route::redirect('/dashboard', '/admin')->name('dashboard');
 
 Route::get('/admin/sorteo-secreto', Giveaway::class)
     ->middleware(['auth'])
