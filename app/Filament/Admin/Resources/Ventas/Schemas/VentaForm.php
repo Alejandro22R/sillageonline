@@ -1,234 +1,120 @@
 <?php
 
-namespace App\Filament\Admin\Resources\Ventas\Schemas;
+namespace App\Filament\Admin\Widgets;
 
-use App\Models\Product;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\CheckboxList;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Schema;
+use App\Models\User;
+use Filament\Widgets\ChartWidget;
+use Illuminate\Support\Facades\DB;
 
-class VentaForm
+class VentasSociosChart extends ChartWidget
 {
-    public static function configure(Schema $schema): Schema
+    protected ?string $heading = 'Ventas Mensuales por Socio (Perfumes y Recaudación)';
+
+    protected static ?int $sort = 3;
+
+    protected int | string | array $columnSpan = 'full';
+
+    // Por defecto muestra la cantidad de perfumes vendidos
+    public ?string $filter = 'perfumes';
+
+    protected function getFilters(): ?array
     {
-        return $schema
-            ->columns(12)
-            ->components([
-
-                // --- CABECERA DE LA VENTA (Datos Generales) ---
-                Select::make('cliente_id')
-                    ->label('Cliente')
-                    ->relationship(
-                        name: 'cliente',
-                        titleAttribute: 'nombre',
-                        modifyQueryUsing: fn ($query) => $query->select('*')->selectRaw("CONCAT(nombre, ' ', apellido) as nombre_completo")
-                    )
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nombre} {$record->apellido}")
-                    ->searchable(['nombre', 'apellido'])
-                    ->preload()
-                    ->required()
-                    ->columnSpan(7)
-                    ->createOptionForm([
-                        TextInput::make('nombre')->label('Nombre')->required()->maxLength(255),
-                        TextInput::make('apellido')->label('Apellido')->required()->maxLength(255),
-                        TextInput::make('cedula')->label('Cédula / Identificación')->maxLength(50),
-                        TextInput::make('telefono')->label('Teléfono')->tel()->maxLength(50),
-                        TextInput::make('correo')->label('Correo Electrónico')->email()->maxLength(255),
-                        Select::make('genero')->label('Género')->required()->options(['Hombre' => 'Hombre', 'Mujer' => 'Mujer']),
-                        TextInput::make('direccion')->label('Dirección')->maxLength(505),
-                    ]),
-
-                DatePicker::make('fecha_venta')
-                    ->label('Fecha de Compra')
-                    ->default(now())
-                    ->required()
-                    ->live()
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        self::actualizarGranTotal($get, $set);
-                    })
-                    ->columnSpan(5),
-
-                Select::make('user_id')
-                    ->label('Vendedor')
-                    ->relationship('vendedor', 'name')
-                    ->default(auth()->id())
-                    ->dehydrated()
-                    ->required()
-                    ->columnSpan(12),
-
-                // --- CUERPO: REPEATER (Mapea con DetalleVenta) ---
-                Repeater::make('detalles')
-                    ->label('Productos de la Factura')
-                    ->relationship()
-                    ->schema([
-
-                        Select::make('product_id')
-                            ->label('Nombre del Perfume')
-                            ->options(Product::query()->pluck('name', 'id'))
-                            ->searchable()
-                            ->required()
-                            ->live()
-                            ->afterStateUpdated(function (Set $set, Get $get, $state) {
-                                self::calcularPreciosItem($set, $get, $state);
-                                self::actualizarGranTotal($get, $set, isInsideRepeater: true);
-                            })
-                            ->columnSpan(4),
-
-                        TextInput::make('cantidad')
-                            ->label('Cant.')
-                            ->numeric()
-                            ->default(1)
-                            ->required()
-                            ->live(onBlur: true)
-                            ->maxValue(function (Get $get) {
-                                $product = Product::find($get('product_id'));
-                                return $product ? $product->stock : 1;
-                            })
-                            ->hint(function (Get $get) {
-                                $product = Product::find($get('product_id'));
-                                return $product ? "Disponibles: {$product->stock}" : null;
-                            })
-                            ->afterStateUpdated(function (Set $set, Get $get, $state) {
-                                self::calcularPreciosItem($set, $get, $get('product_id'));
-                                self::actualizarGranTotal($get, $set, isInsideRepeater: true);
-                            })
-                            ->columnSpan(2),
-
-                        TextInput::make('precio_unitario')
-                            ->label('Costo U.')
-                            ->prefix('$')
-                            ->readonly()
-                            ->columnSpan(3),
-
-                        TextInput::make('subtotal')
-                            ->label('Subtotal')
-                            ->prefix('$')
-                            ->readonly()
-                            ->columnSpan(3),
-
-                        CheckboxList::make('metodo_pago')
-                            ->label('Métodos de Pago para este Producto')
-                            ->options([
-                                'Pago Movil' => 'Pago Movil',
-                                'USDT' => 'USDT',
-                                'Zinli' => 'Zinli',
-                                'Wally' => 'Wally',
-                                'Cash' => 'Cash',
-                                'Zelle' => 'Zelle',
-                            ])
-                            ->columns(3)
-                            ->required()
-                            ->live()
-                            ->afterStateUpdated(function (Get $get, Set $set) {
-                                if (!empty($get('product_id'))) {
-                                    self::calcularPreciosItem($set, $get, $get('product_id'));
-                                }
-                                self::actualizarGranTotal($get, $set, isInsideRepeater: true);
-                            })
-                            ->columnSpan(12),
-                    ])
-                    ->columns(12)
-                    ->columnSpan(12)
-                    ->addActionLabel('Añadir otro perfume')
-                    ->live()
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        self::actualizarGranTotal($get, $set);
-                    }),
-
-                // --- Opción global de recargo de $5 por Pago Móvil ---
-                Select::make('recargo_pago_movil_global')
-                    ->label('¿Desea sumarle los $5 adicionales por pago en Bs (Pago Móvil) al total?')
-                    ->options([
-                        'No' => 'No',
-                        'Si' => 'Sí (+ $5)',
-                    ])
-                    ->default('No')
-                    ->required()
-                    ->visible(function (Get $get) {
-                        $detalles = $get('detalles') ?? [];
-                        foreach ($detalles as $item) {
-                            $metodos = $item['metodo_pago'] ?? [];
-                            if (is_array($metodos) && in_array('Pago Movil', $metodos)) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    })
-                    ->live()
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        self::actualizarGranTotal($get, $set);
-                    })
-                    ->columnSpan(12),
-
-                TextInput::make('total_venta')
-                    ->label('TOTAL DE LA VENTA')
-                    ->numeric()
-                    ->prefix('$')
-                    ->readonly()
-                    ->columnSpan(12)
-                    ->extraInputAttributes([
-                        'style' => 'font-size: 2.5rem; font-weight: bold; color: #EAB308; border: 2px solid #EAB308; background: transparent; height: 100px; text-align: center;'
-                    ]),
-            ]);
+        return [
+            'perfumes' => '🧴 Cantidad de Perfumes Vendidos',
+            'dolares'  => '💵 Total Recaudado ($ USD)',
+        ];
     }
 
-    public static function calcularPreciosItem(Set $set, Get $get, $productId): void
+    public function getDescription(): ?string
     {
-        $product = Product::find($productId);
+        return $this->filter === 'dolares'
+            ? 'Dinero total recaudado en dólares ($ USD) por cada socio mes a mes'
+            : 'Cantidad total de perfumes vendidos (unidades) por cada socio mes a mes';
+    }
 
-        if ($product) {
-            $metodosSeleccionados = $get("metodo_pago") ?? [];
+    protected function getData(): array
+    {
+        $year = now()->year;
+        $socios = User::all(); // Deivys, Alejandro, Orlhey y Francisco
 
-            if (!is_array($metodosSeleccionados)) {
-                $metodosSeleccionados = (array) $metodosSeleccionados;
-            }
-
-            $metodosDivisa = ['Zinli', 'Wally', 'Zelle', 'USDT', 'Cash'];
-            $aplicaPrecioDivisa = !empty(array_intersect($metodosSeleccionados, $metodosDivisa));
-
-            $precioElegido = ($aplicaPrecioDivisa && !empty($product->precio_divisa))
-                ? (float) $product->precio_divisa
-                : (float) $product->retail_price;
-
-            $set("precio_unitario", $precioElegido);
-
-            $cantidad = (int) ($get("cantidad") ?? 1);
-            if ($cantidad > $product->stock) {
-                $set("cantidad", $product->stock);
-                $cantidad = $product->stock;
-            }
-
-            $set("subtotal", $cantidad * $precioElegido);
+        if ($this->filter === 'dolares') {
+            // Suma el dinero recaudado (total_venta) de la tabla ventas
+            $registros = DB::table('ventas')
+                ->whereYear('fecha_venta', $year)
+                ->where('estado_pago', 'pagado')
+                ->selectRaw('user_id, MONTH(fecha_venta) as mes, SUM(total_venta) as total')
+                ->groupBy('user_id', 'mes')
+                ->get();
         } else {
-            $set("precio_unitario", 0);
-            $set("subtotal", 0);
+            // Suma la cantidad de perfumes vendidos (cantidad) de detalle_ventas
+            $registros = DB::table('ventas')
+                ->join('detalle_ventas', 'ventas.id', '=', 'detalle_ventas.venta_id')
+                ->whereYear('ventas.fecha_venta', $year)
+                ->where('ventas.estado_pago', 'pagado')
+                ->selectRaw('ventas.user_id, MONTH(ventas.fecha_venta) as mes, SUM(detalle_ventas.cantidad) as total')
+                ->groupBy('ventas.user_id', 'mes')
+                ->get();
         }
+
+        // Colores para los 4 socios combinados con el tema oscuro de Sillage
+        $colores = [
+            ['border' => '#10B981', 'bg' => 'rgba(16, 185, 129, 0.15)'], // Verde
+            ['border' => '#3B82F6', 'bg' => 'rgba(59, 130, 246, 0.15)'], // Azul
+            ['border' => '#F43F5E', 'bg' => 'rgba(244, 63, 94, 0.15)'],  // Rosa
+            ['border' => '#EAB308', 'bg' => 'rgba(234, 179, 8, 0.15)'],  // Dorado
+        ];
+
+        $datasets = [];
+
+        foreach ($socios as $index => $socio) {
+            $datosPorMes = [];
+
+            for ($mes = 1; $mes <= 12; $mes++) {
+                $fila = $registros->first(
+                    fn ($item) => (int) $item->user_id === (int) $socio->id && (int) $item->mes === $mes
+                );
+
+                $valor = $fila ? $fila->total : 0;
+                $datosPorMes[] = ($this->filter === 'dolares') ? round((float) $valor, 2) : (int) $valor;
+            }
+
+            $estilo = $colores[$index % count($colores)];
+
+            $datasets[] = [
+                'label' => ucwords($socio->name),
+                'data' => $datosPorMes,
+                'borderColor' => $estilo['border'],
+                'backgroundColor' => $estilo['bg'],
+                'borderWidth' => 3,
+                'fill' => true,
+                'tension' => 0.4,
+                'pointRadius' => 4,
+                'pointHoverRadius' => 7,
+            ];
+        }
+
+        return [
+            'datasets' => $datasets,
+            'labels' => ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        ];
     }
 
-    public static function actualizarGranTotal(Get $get, Set $set, bool $isInsideRepeater = false): void
+    protected function getOptions(): array
     {
-        // Si estamos dentro del repeater, usamos '../../' para salir a la raíz del formulario
-        $prefix = $isInsideRepeater ? '../../' : '';
+        return [
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => [
+                        'precision' => $this->filter === 'perfumes' ? 0 : 2,
+                    ],
+                ],
+            ],
+        ];
+    }
 
-        $detalles = $get($prefix . 'detalles') ?? [];
-        $totalVenta = 0;
-
-        foreach ($detalles as $item) {
-            $totalVenta += (float) ($item['subtotal'] ?? 0);
-        }
-
-        // Si se seleccionó "Sí" en el recargo global, se le suman los $5
-        $recargoGlobal = $get($prefix . 'recargo_pago_movil_global') ?? 'No';
-        if ($recargoGlobal === 'Si' && $totalVenta > 0) {
-            $totalVenta += 5.0;
-        }
-
-        // Asignamos el valor directamente al campo raíz
-        $set($prefix . 'total_venta', $totalVenta);
+    protected function getType(): string
+    {
+        return 'line';
     }
 }
