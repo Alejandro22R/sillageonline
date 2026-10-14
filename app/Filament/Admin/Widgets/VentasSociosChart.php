@@ -6,34 +6,47 @@ use App\Models\User;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 
-
 class VentasSociosChart extends ChartWidget
 {
-    protected ?string $heading = 'Rendimiento Mensual por Socio (Perfumes Vendidos)';
+    protected ?string $heading = 'Ventas Mensuales por Socio (Perfumes y Recaudación)';
 
-    // Lo ponemos en sort = 3 o 4 para que salga justo debajo de tus gráficos actuales
     protected static ?int $sort = 3;
 
-    // Ancho completo para que los 12 meses se vean amplios y elegantes
     protected int | string | array $columnSpan = 'full';
 
-    public ?string $filter = 'monto';
+    // Por defecto muestra la cantidad de perfumes vendidos
+    public ?string $filter = 'perfumes';
 
     protected function getFilters(): ?array
     {
         return [
-            'monto' => '💵 Ventas en Dólares ($ USD)',
-            'frascos' => '🧴 Cantidad de Perfumes Vendidos',
-            'exclusivos' => '💎 Solo Perfumes Exclusivos ($ USD)',
+            'perfumes' => '🧴 Cantidad de Perfumes Vendidos',
+            'dolares'  => '💵 Total Recaudado ($ USD)',
         ];
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->filter === 'dolares'
+            ? 'Dinero total recaudado en dólares ($ USD) por cada socio mes a mes'
+            : 'Cantidad total de perfumes vendidos (unidades) por cada socio mes a mes';
     }
 
     protected function getData(): array
     {
         $year = now()->year;
-        $socios = User::all();
+        $socios = User::all(); // Deivys, Alejandro, Orlhey y Francisco
 
-        if ($this->filter === 'frascos') {
+        if ($this->filter === 'dolares') {
+            // Suma el dinero recaudado (total_venta) de la tabla ventas
+            $registros = DB::table('ventas')
+                ->whereYear('fecha_venta', $year)
+                ->where('estado_pago', 'pagado')
+                ->selectRaw('user_id, MONTH(fecha_venta) as mes, SUM(total_venta) as total')
+                ->groupBy('user_id', 'mes')
+                ->get();
+        } else {
+            // Suma la cantidad de perfumes vendidos (cantidad) de detalle_ventas
             $registros = DB::table('ventas')
                 ->join('detalle_ventas', 'ventas.id', '=', 'detalle_ventas.venta_id')
                 ->whereYear('ventas.fecha_venta', $year)
@@ -41,31 +54,14 @@ class VentasSociosChart extends ChartWidget
                 ->selectRaw('ventas.user_id, MONTH(ventas.fecha_venta) as mes, SUM(detalle_ventas.cantidad) as total')
                 ->groupBy('ventas.user_id', 'mes')
                 ->get();
-        } elseif ($this->filter === 'exclusivos') {
-            $registros = DB::table('ventas')
-                ->join('detalle_ventas', 'ventas.id', '=', 'detalle_ventas.venta_id')
-                ->join('products', 'detalle_ventas.product_id', '=', 'products.id')
-                ->whereYear('ventas.fecha_venta', $year)
-                ->where('ventas.estado_pago', 'pagado')
-                ->where('products.is_exclusive', 1)
-                ->selectRaw('ventas.user_id, MONTH(ventas.fecha_venta) as mes, SUM(detalle_ventas.subtotal) as total')
-                ->groupBy('ventas.user_id', 'mes')
-                ->get();
-        } else {
-            $registros = DB::table('ventas')
-                ->whereYear('fecha_venta', $year)
-                ->where('estado_pago', 'pagado')
-                ->selectRaw('user_id, MONTH(fecha_venta) as mes, SUM(total_venta) as total')
-                ->groupBy('user_id', 'mes')
-                ->get();
         }
 
-        // Paleta que combina con el verde, azul y rosa de tu Dashboard actual
+        // Colores para los 4 socios combinados con el tema oscuro de Sillage
         $colores = [
-            ['border' => '#10B981', 'bg' => 'rgba(16, 185, 129, 0.15)'], // Verde (como tu barra de Ventas)
-            ['border' => '#3B82F6', 'bg' => 'rgba(59, 130, 246, 0.15)'], // Azul (como tu dona de Logística)
-            ['border' => '#F43F5E', 'bg' => 'rgba(244, 63, 94, 0.15)'],  // Rosa/Rojo (como tu dona de Marketing)
-            ['border' => '#EAB308', 'bg' => 'rgba(234, 179, 8, 0.15)'],  // Dorado (como tu total de venta)
+            ['border' => '#10B981', 'bg' => 'rgba(16, 185, 129, 0.15)'], // Verde
+            ['border' => '#3B82F6', 'bg' => 'rgba(59, 130, 246, 0.15)'], // Azul
+            ['border' => '#F43F5E', 'bg' => 'rgba(244, 63, 94, 0.15)'],  // Rosa
+            ['border' => '#EAB308', 'bg' => 'rgba(234, 179, 8, 0.15)'],  // Dorado
         ];
 
         $datasets = [];
@@ -77,7 +73,9 @@ class VentasSociosChart extends ChartWidget
                 $fila = $registros->first(
                     fn ($item) => (int) $item->user_id === (int) $socio->id && (int) $item->mes === $mes
                 );
-                $datosPorMes[] = $fila ? (float) $fila->total : 0;
+
+                $valor = $fila ? $fila->total : 0;
+                $datosPorMes[] = ($this->filter === 'dolares') ? round((float) $valor, 2) : (int) $valor;
             }
 
             $estilo = $colores[$index % count($colores)];
@@ -89,7 +87,7 @@ class VentasSociosChart extends ChartWidget
                 'backgroundColor' => $estilo['bg'],
                 'borderWidth' => 3,
                 'fill' => true,
-                'tension' => 0.4, // Hace la curva suave y moderna
+                'tension' => 0.4,
                 'pointRadius' => 4,
                 'pointHoverRadius' => 7,
             ];
@@ -98,6 +96,20 @@ class VentasSociosChart extends ChartWidget
         return [
             'datasets' => $datasets,
             'labels' => ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        ];
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => [
+                        'precision' => $this->filter === 'perfumes' ? 0 : 2,
+                    ],
+                ],
+            ],
         ];
     }
 
