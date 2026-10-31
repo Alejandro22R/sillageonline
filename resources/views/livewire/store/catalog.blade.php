@@ -49,7 +49,7 @@
         }
     </style>
 
-    {{-- Pantalla de carga: solo la primera vez que se entra al catálogo en esta sesión del navegador --}}
+    {{-- Pantalla de carga --}}
     <div
         x-data="{
             mostrar: true,
@@ -61,7 +61,6 @@
                     }
                     sessionStorage.setItem('sillage-catalogo-visto', '1');
                 } catch (e) {
-                    // Si el navegador bloquea sessionStorage (modo privado, etc.), igual mostramos la animación una vez.
                 }
                 setTimeout(() => { this.mostrar = false }, 2000);
             }
@@ -72,11 +71,9 @@
         x-transition:leave-end="opacity-0"
         style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999; background:#050505; overflow:hidden;"
     >
-        {{-- Destellos dorados en las esquinas --}}
         <div class="sillage-destello-carga" style="position:absolute; top:-10%; left:-10%; width:450px; height:450px; background:#D4AF37; opacity:.2; border-radius:9999px; filter:blur(140px);"></div>
         <div class="sillage-destello-carga" style="position:absolute; bottom:-10%; right:-10%; width:450px; height:450px; background:#D4AF37; opacity:.2; border-radius:9999px; filter:blur(140px); animation-delay:1.2s;"></div>
 
-        {{-- Centro: resplandor + anillos + logo, todo centrado en el mismo punto de la pantalla (posicionado de forma absoluta para que no dependa de que el contenedor flex funcione) --}}
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:280px; height:280px; display:flex; align-items:center; justify-content:center;">
             <div class="sillage-resplandor" style="width:160px; height:160px;"></div>
             <div class="sillage-anillo" style="width:260px; height:260px; border:1px solid rgba(212,175,55,.3); border-top-color:#D4AF37;"></div>
@@ -109,20 +106,16 @@
 
     <section class="relative h-[70vh] flex flex-col items-center justify-center text-center px-4">
         <div class="relative z-10 flex flex-col items-center">
-
             <img src="{{ asset('img/sillage.png') }}"
                  alt="Sillage Parfums Logo"
                  class="h-24 md:h-32 w-auto object-contain mb-8 animate-fade-in"
             >
-
             <p class="text-[#D4AF37] tracking-[0.4em] uppercase text-xs md:text-sm mb-4 font-bold">
                 El Arte de la Perfumería Árabe
             </p>
-
             <h1 class="text-7xl md:text-9xl font-cinzel font-bold tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-[#D4AF37] drop-shadow-2xl">
                 Sillage
             </h1>
-
             <p class="mt-4 text-xl tracking-[0.6em] text-gray-400 uppercase font-light">
                 Parfums
             </p>
@@ -137,6 +130,7 @@
             </div>
         @else
 
+            {{-- 1. SECCIÓN EXCLUSIVOS --}}
             @if($exclusivos->count() > 0)
             <section x-data="{
                 scrollNext() { $refs.carouselExclusiva.scrollBy({ left: 350, behavior: 'smooth' }) },
@@ -156,6 +150,11 @@
 
                 <div x-ref="carouselExclusiva" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scroll pb-10">
                     @foreach($exclusivos as $product)
+                        @php
+                            $pctExclusivo = ($product->is_offer && $product->retail_price > 0 && $product->offer_price)
+                                ? round((($product->retail_price - $product->offer_price) / $product->retail_price) * 100)
+                                : 0;
+                        @endphp
                         <div class="min-w-[280px] md:min-w-[320px] snap-center group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2">
                             <a href="{{ route('store.product', $product->slug) }}" class="block">
                                 <div class="w-full overflow-hidden relative bg-[#111]" style="aspect-ratio: 3 / 4;">
@@ -170,9 +169,16 @@
                                             </div>
                                         </div>
                                     @endif
-                                    <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-md text-[#D4AF37] text-[10px] font-bold px-3 py-1 uppercase tracking-widest border border-[#D4AF37]/30 rounded shadow-lg">
-                                        Exclusiva
-                                    </div>
+
+                                    @if($product->is_offer)
+                                        <div class="absolute top-4 left-4 z-20 bg-red-600 text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest rounded shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+                                            {{ $pctExclusivo > 0 ? "-{$pctExclusivo}%" : 'Oferta' }}
+                                        </div>
+                                    @else
+                                        <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-md text-[#D4AF37] text-[10px] font-bold px-3 py-1 uppercase tracking-widest border border-[#D4AF37]/30 rounded shadow-lg">
+                                            Exclusiva
+                                        </div>
+                                    @endif
                                 </div>
                             </a>
                             <div class="p-6 flex flex-col flex-1 text-center">
@@ -182,7 +188,19 @@
                                 <a href="{{ route('store.product', $product->slug) }}" class="hover:text-[#D4AF37] transition-colors">
                                     <h3 class="text-lg font-black uppercase tracking-widest text-white truncate">{{ $product->name }}</h3>
                                 </a>
-                                <p class="text-xl font-light text-[#D4AF37] mt-2 mb-6">${{ number_format($product->retail_price, 2) }}</p>
+
+                                @if($product->is_offer)
+                                    <div class="flex justify-center items-end gap-3 mt-2 mb-6">
+                                        <span class="text-sm text-gray-500 line-through mb-1">
+                                            ${{ number_format($product->retail_price, 2) }}
+                                        </span>
+                                        <span class="text-xl font-black text-red-500">
+                                            ${{ number_format($product->offer_price ?? $product->retail_price, 2) }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <p class="text-xl font-light text-[#D4AF37] mt-2 mb-6">${{ number_format($product->retail_price, 2) }}</p>
+                                @endif
 
                                 @if($product->stock > 0)
                                     <button wire:click="$dispatch('add-to-cart', { productId: {{ $product->id }} })" class="mt-auto w-full bg-transparent border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300">
@@ -200,6 +218,7 @@
             </section>
             @endif
 
+            {{-- 2. SECCIÓN OFERTAS ESPECIALES --}}
             @if($ofertas->count() > 0)
             <section x-data="{
                 scrollNext() { $refs.carouselOfertas.scrollBy({ left: 350, behavior: 'smooth' }) },
@@ -219,6 +238,11 @@
 
                 <div x-ref="carouselOfertas" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scroll pb-10">
                     @foreach($ofertas as $product)
+                        @php
+                            $pctOferta = ($product->retail_price > 0 && $product->offer_price)
+                                ? round((($product->retail_price - $product->offer_price) / $product->retail_price) * 100)
+                                : 0;
+                        @endphp
                         <div class="min-w-[280px] md:min-w-[320px] snap-center group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-red-600/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2">
                             <a href="{{ route('store.product', $product->slug) }}" class="block">
                                 <div class="w-full overflow-hidden relative bg-[#111]" style="aspect-ratio: 3 / 4;">
@@ -233,14 +257,9 @@
                                             </div>
                                         </div>
                                     @endif
-                                  @php
-    $pct = ($product->retail_price > 0 && $product->offer_price)
-        ? round((($product->retail_price - $product->offer_price) / $product->retail_price) * 100)
-        : 0;
-@endphp
-<div class="absolute top-4 left-4 z-20 bg-red-600 text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest rounded shadow-[0_0_15px_rgba(220,38,38,0.5)]">
-    {{ $pct > 0 ? "-{$pct}%" : 'Oferta' }}
-</div>
+                                    <div class="absolute top-4 left-4 z-20 bg-red-600 text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest rounded shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+                                        {{ $pctOferta > 0 ? "-{$pctOferta}%" : 'Oferta' }}
+                                    </div>
                                 </div>
                             </a>
                             <div class="p-6 flex flex-col flex-1 text-center">
@@ -276,6 +295,7 @@
             </section>
             @endif
 
+            {{-- 3. SECCIÓN CATÁLOGO COMPLETO --}}
             <section>
                 <div class="mb-8 text-center">
                     <p class="text-[#D4AF37] tracking-[0.3em] uppercase text-xs mb-2 font-bold">Descubre Todas Nuestras Fragancias</p>
@@ -324,6 +344,11 @@
                     class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 transition-all duration-300 ease-out"
                 >
                     @foreach($products as $product)
+                        @php
+                            $pctCatalogo = ($product->retail_price > 0 && $product->offer_price)
+                                ? round((($product->retail_price - $product->offer_price) / $product->retail_price) * 100)
+                                : 0;
+                        @endphp
                         <div
                             wire:key="product-{{ $sortBy }}-{{ $product->id }}"
                             class="animate-card-in group relative flex flex-col justify-between rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-[#D4AF37]/50 transition-all duration-500 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:-translate-y-2 h-full"
@@ -346,7 +371,9 @@
                                     @endif
 
                                     @if($product->is_offer)
-                                        <div class="absolute top-2 sm:top-4 left-2 sm:left-4 bg-red-600 text-white text-[8px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 uppercase tracking-widest rounded shadow-lg">Oferta</div>
+                                        <div class="absolute top-2 sm:top-4 left-2 sm:left-4 z-20 bg-red-600 text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-2.5 py-0.5 uppercase tracking-widest rounded shadow-lg">
+                                            {{ $pctCatalogo > 0 ? "-{$pctCatalogo}%" : 'Oferta' }}
+                                        </div>
                                     @elseif($product->is_exclusive)
                                         <div class="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black/80 backdrop-blur-sm text-[#D4AF37] text-[8px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 uppercase tracking-widest border border-[#D4AF37]/30 rounded shadow-lg">Exclusiva</div>
                                     @endif
