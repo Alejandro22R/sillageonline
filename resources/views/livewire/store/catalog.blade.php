@@ -233,9 +233,14 @@
                                             </div>
                                         </div>
                                     @endif
-                                    <div class="absolute top-4 left-4 z-20 bg-red-600 text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest rounded shadow-[0_0_15px_rgba(220,38,38,0.5)]">
-                                        Oferta
-                                    </div>
+                                  @php
+    $pct = ($product->retail_price > 0 && $product->offer_price)
+        ? round((($product->retail_price - $product->offer_price) / $product->retail_price) * 100)
+        : 0;
+@endphp
+<div class="absolute top-4 left-4 z-20 bg-red-600 text-white text-[10px] font-black px-3 py-1 uppercase tracking-widest rounded shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+    {{ $pct > 0 ? "-{$pct}%" : 'Oferta' }}
+</div>
                                 </div>
                             </a>
                             <div class="p-6 flex flex-col flex-1 text-center">
